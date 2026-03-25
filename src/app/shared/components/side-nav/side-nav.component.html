@@ -15,7 +15,7 @@
         class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface opacity-60
                hover:opacity-100 hover:bg-surface-container-lowest/50 transition-all duration-200"
       >
-        <span class="material-symbols-outlined">{{ item.icon }}</span>
+        <span class="material-symbols-outlined" aria-hidden="true">{{ item.icon }}</span>
         <span class="font-body text-sm tracking-wide font-medium">{{ item.label }}</span>
       </a>
     }
@@ -26,13 +26,13 @@
   </button>
 
   <div class="mt-auto pt-6 space-y-2">
-    <a href="#" class="flex items-center gap-3 px-4 py-2 text-on-surface opacity-60 hover:opacity-100 transition-all">
-      <span class="material-symbols-outlined">settings</span>
+    <button class="flex items-center gap-3 px-4 py-2 text-on-surface opacity-60 hover:opacity-100 transition-all w-full">
+      <span class="material-symbols-outlined" aria-hidden="true">settings</span>
       <span class="font-body text-sm font-medium">Settings</span>
-    </a>
-    <a href="#" class="flex items-center gap-3 px-4 py-2 text-on-surface opacity-60 hover:opacity-100 transition-all">
-      <span class="material-symbols-outlined">help_outline</span>
+    </button>
+    <button class="flex items-center gap-3 px-4 py-2 text-on-surface opacity-60 hover:opacity-100 transition-all w-full">
+      <span class="material-symbols-outlined" aria-hidden="true">help_outline</span>
       <span class="font-body text-sm font-medium">Help</span>
-    </a>
+    </button>
   </div>
 </aside>
