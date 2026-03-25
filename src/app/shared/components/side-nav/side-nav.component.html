@@ -1,0 +1,38 @@
+<aside class="h-screen w-72 left-0 top-0 fixed bg-surface-container-low flex flex-col p-6 z-50">
+  <div class="text-xl font-black text-primary font-headline mb-8">Mindful Atelier</div>
+
+  <div class="mb-10">
+    <p class="font-body text-sm tracking-wide font-medium text-primary uppercase opacity-60 mb-2">The Workspace</p>
+    <h2 class="font-headline font-bold text-xl text-primary">Curated Focus</h2>
+  </div>
+
+  <nav class="flex-grow space-y-2">
+    @for (item of navItems; track item.route) {
+      <a
+        [routerLink]="item.route"
+        routerLinkActive="bg-surface-container-lowest text-primary font-bold shadow-sm translate-x-1"
+        [routerLinkActiveOptions]="{ exact: false }"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface opacity-60
+               hover:opacity-100 hover:bg-surface-container-lowest/50 transition-all duration-200"
+      >
+        <span class="material-symbols-outlined">{{ item.icon }}</span>
+        <span class="font-body text-sm tracking-wide font-medium">{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+
+  <button class="mt-4 w-full py-3 px-4 bg-primary text-on-primary rounded-full font-bold text-sm tracking-wide hover:opacity-90 transition-all">
+    Start Week
+  </button>
+
+  <div class="mt-auto pt-6 space-y-2">
+    <a href="#" class="flex items-center gap-3 px-4 py-2 text-on-surface opacity-60 hover:opacity-100 transition-all">
+      <span class="material-symbols-outlined">settings</span>
+      <span class="font-body text-sm font-medium">Settings</span>
+    </a>
+    <a href="#" class="flex items-center gap-3 px-4 py-2 text-on-surface opacity-60 hover:opacity-100 transition-all">
+      <span class="material-symbols-outlined">help_outline</span>
+      <span class="font-body text-sm font-medium">Help</span>
+    </a>
+  </div>
+</aside>
