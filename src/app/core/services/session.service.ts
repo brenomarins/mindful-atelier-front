@@ -26,10 +26,10 @@ export class SessionService {
   }
 
   complete(id: string): Observable<void> {
-    return this.http.post<void>(`${this.base}/${id}/complete`, {});
+    return this.http.post<void>(`${this.base}/${id}/complete`, null);
   }
 
   interrupt(id: string): Observable<void> {
-    return this.http.post<void>(`${this.base}/${id}/interrupt`, {});
+    return this.http.post<void>(`${this.base}/${id}/interrupt`, null);
   }
 }

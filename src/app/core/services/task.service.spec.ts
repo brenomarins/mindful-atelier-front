@@ -20,16 +20,15 @@ describe('TaskService', () => {
 
   it('list() calls GET /tasks', () => {
     service.list().subscribe();
-    http.expectOne(`${environment.apiUrl}/tasks`).flush([]);
+    const req = http.expectOne(`${environment.apiUrl}/tasks`);
+    expect(req.request.method).toBe('GET');
+    req.flush([]);
   });
 
   it('list() with filters appends query params', () => {
     service.list({ status: 'backlog', scheduledDay: '2026-03-25' }).subscribe();
-    const req = http.expectOne(r =>
-      r.url === `${environment.apiUrl}/tasks` &&
-      r.params.get('status') === 'backlog' &&
-      r.params.get('scheduledDay') === '2026-03-25'
-    );
+    const req = http.expectOne(r => r.url === `${environment.apiUrl}/tasks`);
+    expect(req.request.method).toBe('GET');
     expect(req.request.params.get('status')).toBe('backlog');
     expect(req.request.params.get('scheduledDay')).toBe('2026-03-25');
     req.flush([]);
