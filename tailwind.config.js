@@ -58,12 +58,14 @@ module.exports = {
         body:     ["Work Sans", "sans-serif"],
         label:    ["Work Sans", "sans-serif"],
       },
+      // Design system radius scale — intentionally smaller than Tailwind defaults.
+      // Cards use `rounded-xl` (0.5rem), buttons use `rounded-full` (Tailwind default: 9999px = pill shape).
       borderRadius: {
         DEFAULT: "0.125rem",
         sm:      "0.125rem",
         lg:      "0.25rem",
         xl:      "0.5rem",
-        full:    "0.75rem",
+        // Note: `full` is intentionally NOT overridden — keep Tailwind default 9999px for pill buttons.
       },
     },
   },
