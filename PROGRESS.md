@@ -5,7 +5,7 @@ Update the status column as each page/feature is completed.
 | Feature | Status | Notes |
 |---|---|---|
 | Project Scaffold | ✅ Done | Angular 20, Tailwind 3, Chronos & Calm theme, app shell |
-| Core Services | ⬜ Not Started | TaskService, TagService, SessionService, JournalService, DependencyService |
+| Core Services | ✅ Done | TaskService, TagService, SessionService, JournalService, DependencyService |
 | Shared Components | ✅ Done | SideNav, TaskCard, MoodSelector |
 | Weekly Schedule | ✅ Done | 7-day grid, CDK drag-drop, daily reflection strip |
 | Task Backlog | ⬜ Not Started | List view with status filters, reorder |
