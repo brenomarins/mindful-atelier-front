@@ -1,0 +1,48 @@
+<div
+  class="p-4 rounded-xl cursor-pointer {{ cardClasses }} {{ leftBorder }}"
+  (click)="cardClick.emit(task)"
+>
+  <div class="flex justify-between items-start mb-2">
+    <!-- Tag chip -->
+    @if (taskTags.length > 0) {
+      <span
+        class="text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-tighter"
+        [style.background-color]="taskTags[0].color + '33'"
+        [style.color]="taskTags[0].color"
+      >
+        {{ taskTags[0].name }}
+      </span>
+    } @else {
+      <span></span>
+    }
+
+    <!-- Status icon -->
+    <button
+      (click)="$event.stopPropagation(); toggleStatus()"
+      class="focus:outline-none"
+      [title]="'Toggle status: ' + task.status"
+    >
+      <span
+        class="material-symbols-outlined text-sm"
+        aria-hidden="true"
+        [class.text-secondary]="isInProgress"
+        [class.text-primary]="isDone"
+        [class.text-outline]="!isDone && !isInProgress"
+        [style.font-variation-settings]="isDone ? '\'FILL\' 1' : '\'FILL\' 0'"
+      >{{ statusIcon }}</span>
+    </button>
+  </div>
+
+  <h4
+    class="font-body font-bold text-sm leading-snug"
+    [class.line-through]="isDone"
+    [class.text-outline]="isDone"
+    [class.text-on-surface]="!isDone"
+  >
+    {{ task.title }}
+  </h4>
+
+  @if (task.dueDate && !isDone) {
+    <p class="text-outline text-[11px] mt-1">Due {{ task.dueDate }}</p>
+  }
+</div>
