@@ -1,0 +1,114 @@
+<!-- Top App Bar -->
+<header class="flex justify-between items-center px-10 py-6 bg-surface-container-low sticky top-0 z-40">
+  <div class="flex items-center gap-8">
+    <h1 class="text-2xl font-extrabold text-primary font-headline tracking-tight">Schedule</h1>
+    <div class="flex items-center gap-4">
+      <button (click)="prevWeek()" class="p-1 rounded-full hover:bg-surface-container transition-colors">
+        <span class="material-symbols-outlined text-primary" aria-hidden="true">chevron_left</span>
+      </button>
+      <span class="text-primary font-bold">{{ weekLabel }}</span>
+      <button (click)="nextWeek()" class="p-1 rounded-full hover:bg-surface-container transition-colors">
+        <span class="material-symbols-outlined text-primary" aria-hidden="true">chevron_right</span>
+      </button>
+    </div>
+  </div>
+  <button class="flex items-center gap-2 bg-primary text-on-primary px-6 py-2.5 rounded-full font-bold text-sm hover:opacity-90 transition-all shadow-sm">
+    <span class="material-symbols-outlined text-sm" aria-hidden="true">add</span>
+    Add Task
+  </button>
+</header>
+
+<!-- Week Grid -->
+<section class="flex-grow p-10 overflow-x-auto bg-background">
+  <div class="grid grid-cols-7 gap-4 min-w-[1200px]"
+       cdkDropListGroup>
+    @for (col of columns(); track col.date) {
+      <div class="flex flex-col gap-4"
+           [class.bg-surface-container-low]="!col.isToday"
+           [class.rounded-xl]="!col.isToday"
+           [class.p-2]="!col.isToday">
+
+        <!-- Day header -->
+        <div class="flex flex-col pb-4 border-b border-outline-variant/20"
+             [class.px-2]="!col.isToday">
+          <span class="font-headline font-bold text-xs uppercase tracking-widest"
+                [class.text-primary]="col.isToday"
+                [class.text-outline]="!col.isToday">
+            {{ col.label }}
+          </span>
+          <span class="text-4xl font-extrabold font-headline"
+                [class.text-on-surface]="col.isToday"
+                [class.text-on-surface-variant]="!col.isToday"
+                [class.opacity-60]="!col.isToday">
+            {{ col.dayNumber }}
+          </span>
+        </div>
+
+        <!-- Drop zone -->
+        <div
+          class="flex flex-col gap-3 min-h-[120px]"
+          [class.px-2]="!col.isToday"
+          cdkDropList
+          [id]="'drop-' + col.date"
+          [cdkDropListData]="col.tasks"
+          [cdkDropListConnectedTo]="dropListIds()"
+          (cdkDropListDropped)="drop($event, col.date)"
+        >
+          @for (task of col.tasks; track task.id) {
+            <div cdkDrag>
+              <app-task-card
+                [task]="task"
+                [tags]="tags()"
+                (statusChange)="onStatusChange(task, $event)"
+              />
+            </div>
+          }
+
+          @if (col.tasks.length === 0) {
+            <div class="flex flex-col items-center justify-center py-8 opacity-20">
+              <span class="material-symbols-outlined text-3xl mb-1" aria-hidden="true">inbox</span>
+              <span class="text-xs font-bold uppercase tracking-widest">Empty</span>
+            </div>
+          }
+        </div>
+
+      </div>
+    }
+  </div>
+</section>
+
+<!-- Daily Reflection Strip -->
+<section class="mt-auto bg-tertiary-fixed p-10 rounded-t-[3rem]">
+  <div class="max-w-4xl">
+    <div class="flex items-center gap-4 mb-6">
+      <span class="material-symbols-outlined text-tertiary text-4xl" aria-hidden="true">edit_square</span>
+      <div>
+        <h3 class="text-tertiary font-headline font-extrabold text-2xl">Daily Reflection</h3>
+        <p class="text-on-tertiary-fixed-variant text-sm font-medium">
+          What is one thing that made you feel accomplished today?
+        </p>
+      </div>
+    </div>
+
+    <textarea
+      class="w-full bg-transparent border-none focus:ring-0 text-3xl font-headline font-bold
+             text-tertiary placeholder-tertiary/30 resize-none h-32"
+      placeholder="Start typing your thoughts..."
+      [ngModel]="reflectionText()"
+      (ngModelChange)="reflectionText.set($event)"
+    ></textarea>
+
+    <div class="flex gap-4 mt-4">
+      <button
+        (click)="saveReflection()"
+        class="px-6 py-2 bg-tertiary text-on-tertiary rounded-full font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-all"
+      >
+        Save Entry
+      </button>
+      <a routerLink="/journal"
+         class="px-6 py-2 border border-tertiary/20 text-tertiary rounded-full font-bold text-xs uppercase tracking-widest hover:bg-tertiary/5 transition-all cursor-pointer">
+        View History
+      </a>
+    </div>
+  </div>
+</section>
