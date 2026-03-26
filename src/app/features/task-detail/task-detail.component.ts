@@ -10,11 +10,12 @@ import { Tag } from '../../core/models/tag.model';
 import { Session } from '../../core/models/session.model';
 import { PomodoroTimerComponent } from './components/pomodoro-timer/pomodoro-timer.component';
 import { SubtaskListComponent } from './components/subtask-list/subtask-list.component';
+import { DependencyPanelComponent } from './components/dependency-panel/dependency-panel.component';
 
 @Component({
   selector: 'app-task-detail',
   standalone: true,
-  imports: [CommonModule, PomodoroTimerComponent, SubtaskListComponent],
+  imports: [CommonModule, PomodoroTimerComponent, SubtaskListComponent, DependencyPanelComponent],
   templateUrl: './task-detail.component.html',
 })
 export class TaskDetailComponent implements OnInit {

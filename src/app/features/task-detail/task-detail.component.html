@@ -52,10 +52,7 @@
 
       <!-- Right (3 cols): Dependencies + Metadata -->
       <div class="col-span-12 lg:col-span-3 space-y-6">
-        <!-- Dependencies placeholder -->
-        <div class="bg-surface-container-low p-6 rounded-xl opacity-50">
-          Dependencies coming soon…
-        </div>
+        <app-dependency-panel [taskId]="taskId()" />
 
         <!-- Ambient Sound (decorative) -->
         <section class="bg-tertiary text-on-tertiary-container p-6 rounded-xl relative overflow-hidden">
