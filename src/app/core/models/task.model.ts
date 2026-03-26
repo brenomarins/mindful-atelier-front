@@ -12,6 +12,7 @@ export interface Task {
   dueDate?: string | null;
   createdAt: string;
   updatedAt: string;
+  hasDependencies?: boolean; // true if task has any prerequisites or blocked-by relationships
 }
 
 export interface CreateTaskRequest {

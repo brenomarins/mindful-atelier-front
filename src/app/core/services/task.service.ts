@@ -9,11 +9,23 @@ export class TaskService {
   private http = inject(HttpClient);
   private base = `${environment.apiUrl}/tasks`;
 
-  list(filters?: { status?: string; scheduledDay?: string; parentId?: string }): Observable<Task[]> {
+  list(filters?: {
+    status?: string;
+    scheduledDay?: string;
+    parentId?: string;
+    search?: string;
+    tagId?: string;
+    sortBy?: string;
+    order?: 'asc' | 'desc';
+  }): Observable<Task[]> {
     let params = new HttpParams();
     if (filters?.status)       params = params.set('status', filters.status);
     if (filters?.scheduledDay) params = params.set('scheduledDay', filters.scheduledDay);
     if (filters?.parentId)     params = params.set('parentId', filters.parentId);
+    if (filters?.search)       params = params.set('search', filters.search);
+    if (filters?.tagId)        params = params.set('tagId', filters.tagId);
+    if (filters?.sortBy)       params = params.set('sortBy', filters.sortBy);
+    if (filters?.order)        params = params.set('order', filters.order);
     return this.http.get<Task[]>(this.base, { params });
   }
 
