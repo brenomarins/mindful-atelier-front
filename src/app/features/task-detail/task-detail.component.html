@@ -45,11 +45,9 @@
         <app-pomodoro-timer [taskId]="taskId()" [openSession]="openSession()" />
       </div>
 
-      <!-- Center (5 cols): Subtasks — placeholder -->
+      <!-- Center (5 cols): Subtasks -->
       <div class="col-span-12 lg:col-span-5">
-        <div class="bg-surface-container-lowest p-8 rounded-xl opacity-50">
-          Subtasks coming soon…
-        </div>
+        <app-subtask-list [taskId]="taskId()" />
       </div>
 
       <!-- Right (3 cols): Dependencies + Metadata -->

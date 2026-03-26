@@ -9,11 +9,12 @@ import { Task } from '../../core/models/task.model';
 import { Tag } from '../../core/models/tag.model';
 import { Session } from '../../core/models/session.model';
 import { PomodoroTimerComponent } from './components/pomodoro-timer/pomodoro-timer.component';
+import { SubtaskListComponent } from './components/subtask-list/subtask-list.component';
 
 @Component({
   selector: 'app-task-detail',
   standalone: true,
-  imports: [CommonModule, PomodoroTimerComponent],
+  imports: [CommonModule, PomodoroTimerComponent, SubtaskListComponent],
   templateUrl: './task-detail.component.html',
 })
 export class TaskDetailComponent implements OnInit {
