@@ -21,6 +21,7 @@
 
     <!-- Add Task button (non-functional) -->
     <button
+      type="button"
       class="bg-primary text-on-primary px-6 py-2 rounded-full font-bold text-sm font-body hover:scale-105 active:scale-95 transition-all"
       (click)="onAddTask()"
     >
@@ -37,6 +38,7 @@
 
     <!-- Status chips -->
     <button
+      type="button"
       *ngFor="let chip of [
         { label: 'All Tasks', value: 'all', icon: 'filter_list' },
         { label: 'Backlog',      value: 'backlog',      icon: null },
@@ -48,6 +50,7 @@
       [class.text-on-secondary-fixed]="statusFilter() === chip.value"
       [class.bg-surface-container-high]="statusFilter() !== chip.value"
       [class.text-on-surface-variant]="statusFilter() !== chip.value"
+      [class.hover:bg-surface-container-highest]="statusFilter() !== chip.value"
       (click)="onStatusChipClick($any(chip.value))"
     >
       <span *ngIf="chip.icon" class="material-symbols-outlined text-[16px]">{{ chip.icon }}</span>
@@ -56,12 +59,14 @@
 
     <!-- Tag chips -->
     <button
+      type="button"
       *ngFor="let tag of tags()"
       class="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer font-body"
       [class.bg-secondary-fixed-dim]="tagFilter() === tag.id"
       [class.text-on-secondary-fixed]="tagFilter() === tag.id"
       [class.bg-surface-container-high]="tagFilter() !== tag.id"
       [class.text-on-surface-variant]="tagFilter() !== tag.id"
+      [class.hover:bg-surface-container-highest]="tagFilter() !== tag.id"
       (click)="onTagChipClick(tagFilter() === tag.id ? null : tag.id)"
     >
       <span
@@ -73,6 +78,7 @@
 
     <!-- Sort button -->
     <button
+      type="button"
       class="ml-auto flex items-center gap-2 text-outline text-xs font-medium cursor-pointer hover:text-primary transition-colors font-body"
       (click)="onToggleSort()"
     >
@@ -124,6 +130,7 @@
               *ngFor="let task of tasks()"
               cdkDrag
               [cdkDragData]="task"
+              [cdkDragDisabled]="task.status === 'done'"
               class="group transition-all"
               [class.hover:bg-surface-container-lowest]="task.status !== 'done'"
               [class.cursor-grab]="task.status !== 'done'"
@@ -217,6 +224,8 @@
               <td class="px-6 py-4">
                 <!-- TODO: context menu (edit, delete, schedule to day) -->
                 <button
+                  type="button"
+                  aria-label="More actions"
                   *ngIf="task.status !== 'done'"
                   class="opacity-0 group-hover:opacity-100 transition-opacity"
                   (click)="$event.stopPropagation()"
@@ -302,6 +311,8 @@
 
 <!-- FAB (same TODO as Add Task button) -->
 <button
+  type="button"
+  aria-label="Add new task"
   class="fixed bottom-10 right-10 w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50"
   (click)="onAddTask()"
 >
