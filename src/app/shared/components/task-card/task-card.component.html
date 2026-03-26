@@ -1,5 +1,6 @@
 <div
   class="p-4 rounded-xl cursor-pointer {{ cardClasses }} {{ leftBorder }}"
+  [routerLink]="['/tasks', task.id]"
   (click)="cardClick.emit(task)"
 >
   <div class="flex justify-between items-start mb-2">

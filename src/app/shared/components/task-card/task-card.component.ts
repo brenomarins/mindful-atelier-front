@@ -1,10 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { Task } from '../../../core/models/task.model';
 import { Tag } from '../../../core/models/tag.model';
 
 @Component({
   selector: 'app-task-card',
   standalone: true,
+  imports: [RouterLink],
   templateUrl: './task-card.component.html',
 })
 export class TaskCardComponent {
