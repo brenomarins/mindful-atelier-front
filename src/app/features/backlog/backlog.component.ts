@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
-  DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem,
+  DragDropModule, CdkDragDrop, moveItemInArray,
 } from '@angular/cdk/drag-drop';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
