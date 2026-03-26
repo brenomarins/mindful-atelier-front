@@ -27,5 +27,10 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/dependencies/dependencies.component').then(m => m.DependenciesComponent),
   },
+  {
+    path: 'tasks/:id',
+    loadComponent: () =>
+      import('./features/task-detail/task-detail.component').then(m => m.TaskDetailComponent),
+  },
   { path: '**', redirectTo: 'schedule' },
 ];
