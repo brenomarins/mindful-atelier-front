@@ -1,0 +1,129 @@
+@if (task(); as t) {
+  <!-- Top Bar -->
+  <header class="flex justify-between items-center px-10 py-6 bg-surface-container-low">
+    <div class="flex items-center gap-4">
+      <button (click)="location.back()"
+              class="p-2 hover:bg-surface-container-high rounded-full transition-colors active:scale-95 duration-150">
+        <span class="material-symbols-outlined">arrow_back</span>
+      </button>
+      <h1 class="font-headline font-bold text-2xl tracking-tight text-primary">{{ t.title }}</h1>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2 text-outline">
+        <span class="material-symbols-outlined">calendar_today</span>
+        <span class="text-sm font-medium">{{ today | date:'EEEE, MMM d' }}</span>
+      </div>
+      <button class="p-2 hover:bg-surface-container-high rounded-full transition-colors">
+        <span class="material-symbols-outlined">settings</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="px-10 py-10 max-w-[1400px] mx-auto">
+
+    <!-- Hero -->
+    <div class="mb-12">
+      @if (taskTags.length > 0) {
+        <div class="flex items-center gap-3 mb-3">
+          @for (tag of taskTags; track tag.id) {
+            <span class="px-3 py-1 rounded-full text-xs font-bold tracking-wider text-white"
+                  [style.background-color]="tag.color">{{ tag.name }}</span>
+          }
+        </div>
+      }
+      <h2 class="text-5xl font-headline font-extrabold tracking-tight text-on-surface mb-4">{{ t.title }}</h2>
+      @if (t.description) {
+        <p class="text-on-surface-variant text-lg max-w-2xl leading-relaxed">{{ t.description }}</p>
+      }
+    </div>
+
+    <!-- 3-Column Bento Grid -->
+    <div class="grid grid-cols-12 gap-6 items-start">
+
+      <!-- Left (4 cols): Timer — placeholder until PomodoroTimerComponent is built -->
+      <div class="col-span-12 lg:col-span-4">
+        <div class="bg-primary-container text-on-primary-container p-8 rounded-xl text-center opacity-50">
+          Timer coming soon…
+        </div>
+      </div>
+
+      <!-- Center (5 cols): Subtasks — placeholder -->
+      <div class="col-span-12 lg:col-span-5">
+        <div class="bg-surface-container-lowest p-8 rounded-xl opacity-50">
+          Subtasks coming soon…
+        </div>
+      </div>
+
+      <!-- Right (3 cols): Dependencies + Metadata -->
+      <div class="col-span-12 lg:col-span-3 space-y-6">
+        <!-- Dependencies placeholder -->
+        <div class="bg-surface-container-low p-6 rounded-xl opacity-50">
+          Dependencies coming soon…
+        </div>
+
+        <!-- Ambient Sound (decorative) -->
+        <section class="bg-tertiary text-on-tertiary-container p-6 rounded-xl relative overflow-hidden">
+          <h3 class="font-headline font-bold text-sm mb-4 text-on-tertiary-container/80">Ambient Sound</h3>
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-on-tertiary-container rounded-lg flex items-center justify-center text-tertiary">
+              <span class="material-symbols-outlined">filter_drama</span>
+            </div>
+            <div>
+              <div class="text-sm font-bold text-on-tertiary">Morning Rain</div>
+              <div class="text-[10px] opacity-60">Spatial Audio Active</div>
+            </div>
+            <button class="ml-auto w-8 h-8 flex items-center justify-center rounded-full bg-on-tertiary-container/20">
+              <span class="material-symbols-outlined text-sm">volume_up</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Task Metadata -->
+        <div class="px-2 space-y-4">
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-outline">Assigned to:</span>
+            <div class="flex items-center gap-2 font-bold">
+              <div class="w-5 h-5 rounded-full bg-secondary-fixed flex items-center justify-center text-[10px] text-on-secondary-fixed">
+                EA
+              </div>
+              You
+            </div>
+          </div>
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-outline">Est. Time:</span>
+            <span class="font-bold">—</span>
+          </div>
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-outline">Deadline:</span>
+            <span class="font-bold" [ngClass]="dueDateClass(t.dueDate)">
+              {{ formatDate(t.dueDate) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Decorative Gallery -->
+    <div class="mt-16 grid grid-cols-4 gap-6">
+      <div class="col-span-1 h-64 rounded-xl overflow-hidden shadow-sm">
+        <img src="https://picsum.photos/seed/task-detail-1/300/256"
+             alt="" class="w-full h-full object-cover" />
+      </div>
+      <div class="col-span-2 h-64 rounded-xl overflow-hidden shadow-sm">
+        <img src="https://picsum.photos/seed/task-detail-2/600/256"
+             alt="" class="w-full h-full object-cover" />
+      </div>
+      <div class="col-span-1 h-64 rounded-xl overflow-hidden bg-primary-container flex items-center justify-center p-8 text-on-primary-container text-center">
+        <div>
+          <span class="material-symbols-outlined text-4xl mb-4">auto_awesome</span>
+          <p class="font-headline font-bold text-sm leading-snug">
+            "The secret of getting ahead is getting started."
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+} @else {
+  <div class="flex items-center justify-center h-64 text-outline font-body">Loading…</div>
+}
