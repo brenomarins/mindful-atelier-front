@@ -49,12 +49,12 @@ export class BacklogComponent implements OnInit {
   // ── Computed ───────────────────────────────────────────────────────────────
   weekDays = computed<WeekDay[]>(() => {
     const today    = new Date();
-    const todayStr = today.toISOString().slice(0, 10);
+    const todayStr = this.toLocalISO(today);
     const monday   = this.getMonday(today);
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(monday);
       d.setDate(monday.getDate() + i);
-      const isoDate = d.toISOString().slice(0, 10);
+      const isoDate = this.toLocalISO(d);
       return {
         label:   d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
         isoDate,
@@ -86,17 +86,23 @@ export class BacklogComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.tagSvc.list().subscribe(tags => this.tags.set(tags));
+    this.tagSvc.list()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(tags => this.tags.set(tags));
 
-    this.statsSvc.getCompletion().subscribe({
-      next:  stats => this.completionRate.set(stats),
-      error: () => {},  // hide card silently on error
-    });
+    this.statsSvc.getCompletion()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  stats => this.completionRate.set(stats),
+        error: () => {},  // hide card silently on error
+      });
 
-    this.statsSvc.getTipCard().subscribe({
-      next:  tip => this.tipCard.set(tip),
-      error: () => {},  // hide card silently on error
-    });
+    this.statsSvc.getTipCard()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  tip => this.tipCard.set(tip),
+        error: () => {},  // hide card silently on error
+      });
   }
 
   // ── Public helpers ─────────────────────────────────────────────────────────
@@ -194,5 +200,11 @@ export class BacklogComponent implements OnInit {
     const diff = day === 0 ? -6 : 1 - day;
     date.setDate(date.getDate() + diff);
     return date;
+  }
+
+  /** Returns local-timezone ISO date string (YYYY-MM-DD) — avoids UTC offset bugs. */
+  private toLocalISO(d: Date): string {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   }
 }
