@@ -34,6 +34,13 @@ describe('TaskService', () => {
     req.flush([]);
   });
 
+  it('list() with parentId appends parentId query param', () => {
+    service.list({ parentId: 'parent-123' }).subscribe();
+    const req = http.expectOne(r => r.url === `${environment.apiUrl}/tasks`);
+    expect(req.request.params.get('parentId')).toBe('parent-123');
+    req.flush([]);
+  });
+
   it('update() calls PATCH /tasks/:id', () => {
     service.update('abc', { status: 'done' }).subscribe();
     const req = http.expectOne(`${environment.apiUrl}/tasks/abc`);
