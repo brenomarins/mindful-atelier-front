@@ -136,6 +136,7 @@ export class PomodoroTimerComponent implements OnInit {
   }
 
   private startInterval(): void {
+    this.stopInterval(); // guard against double-subscription
     this.subscription = interval(1000).subscribe(() => {
       const remaining = this.timeRemaining() - 1;
       if (remaining <= 0) {

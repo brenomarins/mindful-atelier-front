@@ -38,10 +38,15 @@ export class TaskDetailComponent implements OnInit {
       task:        this.taskSvc.get(id),
       tags:        this.tagSvc.list(),
       openSession: this.sessionSvc.getOpen(),
-    }).subscribe(({ task, tags, openSession }) => {
-      this.task.set(task);
-      this.tags.set(tags);
-      this.openSession.set(openSession);
+    }).subscribe({
+      next: ({ task, tags, openSession }) => {
+        this.task.set(task);
+        this.tags.set(tags);
+        this.openSession.set(openSession);
+      },
+      error: () => {
+        // Silent fail: loading state remains, no toast in v1
+      },
     });
   }
 
