@@ -8,7 +8,7 @@ Update the status column as each page/feature is completed.
 | Core Services | ✅ Done | TaskService, TagService, SessionService, JournalService, DependencyService |
 | Shared Components | ✅ Done | SideNav, TaskCard, MoodSelector |
 | Weekly Schedule | ✅ Done | 7-day grid, CDK drag-drop, daily reflection strip |
-| Task Backlog | ⬜ Not Started | List view with status filters, reorder |
+| Task Backlog | ✅ Done | Table with dep indicators, combined status+tag filters, search, sort, Quick Schedule CDK drag-drop |
 | Task Detail | ⬜ Not Started | Detail panel, subtasks, Pomodoro timer |
 | Dependencies Canvas | ⬜ Not Started | SVG graph, draggable nodes, canvas positions |
 | Daily Journal | ⬜ Not Started | Mood selector, achievements/difficulties text, upsert |
