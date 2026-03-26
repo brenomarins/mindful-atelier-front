@@ -52,6 +52,7 @@ module.exports = {
         "on-error":                   "#ffffff",
         "error-container":            "#ffdad6",
         "on-error-container":         "#93000a",
+        "warning":                    "#f79d08",
       },
       fontFamily: {
         headline: ["Manrope", "sans-serif"],
