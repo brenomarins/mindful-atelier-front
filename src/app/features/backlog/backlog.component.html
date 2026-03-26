@@ -1,1 +1,309 @@
-<p class="p-10 font-body">loading...</p>
+<!-- Header -->
+<header class="flex justify-between items-center px-10 py-6 bg-surface">
+  <div class="flex items-center gap-4">
+    <h1 class="font-headline font-bold text-2xl tracking-tight text-primary">Task Backlog</h1>
+    <span class="bg-primary-fixed text-on-primary-fixed px-3 py-0.5 rounded-full text-xs font-bold">
+      {{ tasks().length }} Items
+    </span>
+  </div>
+
+  <div class="flex items-center gap-6">
+    <!-- Search bar -->
+    <div class="relative">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
+      <input
+        type="text"
+        placeholder="Search tasks..."
+        class="pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant/20 rounded-xl text-sm w-64 focus:ring-1 focus:ring-primary-container outline-none transition-all font-body"
+        (input)="onSearchInput($any($event.target).value)"
+      />
+    </div>
+
+    <!-- Add Task button (non-functional) -->
+    <button
+      class="bg-primary text-on-primary px-6 py-2 rounded-full font-bold text-sm font-body hover:scale-105 active:scale-95 transition-all"
+      (click)="onAddTask()"
+    >
+      Add Task
+    </button>
+  </div>
+</header>
+
+<!-- Content area -->
+<div class="px-10 pb-12">
+
+  <!-- Filter bar -->
+  <div class="flex items-center gap-3 mb-8 overflow-x-auto pb-2">
+
+    <!-- Status chips -->
+    <button
+      *ngFor="let chip of [
+        { label: 'All Tasks', value: 'all', icon: 'filter_list' },
+        { label: 'Backlog',      value: 'backlog',      icon: null },
+        { label: 'In Progress',  value: 'in-progress',  icon: null },
+        { label: 'Done',         value: 'done',         icon: null }
+      ]"
+      class="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer font-body"
+      [class.bg-secondary-fixed-dim]="statusFilter() === chip.value"
+      [class.text-on-secondary-fixed]="statusFilter() === chip.value"
+      [class.bg-surface-container-high]="statusFilter() !== chip.value"
+      [class.text-on-surface-variant]="statusFilter() !== chip.value"
+      (click)="onStatusChipClick($any(chip.value))"
+    >
+      <span *ngIf="chip.icon" class="material-symbols-outlined text-[16px]">{{ chip.icon }}</span>
+      <span>{{ chip.label }}</span>
+    </button>
+
+    <!-- Tag chips -->
+    <button
+      *ngFor="let tag of tags()"
+      class="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer font-body"
+      [class.bg-secondary-fixed-dim]="tagFilter() === tag.id"
+      [class.text-on-secondary-fixed]="tagFilter() === tag.id"
+      [class.bg-surface-container-high]="tagFilter() !== tag.id"
+      [class.text-on-surface-variant]="tagFilter() !== tag.id"
+      (click)="onTagChipClick(tagFilter() === tag.id ? null : tag.id)"
+    >
+      <span
+        class="w-2 h-2 rounded-full inline-block"
+        [style.background-color]="tag.color"
+      ></span>
+      <span>{{ tag.name }}</span>
+    </button>
+
+    <!-- Sort button -->
+    <button
+      class="ml-auto flex items-center gap-2 text-outline text-xs font-medium cursor-pointer hover:text-primary transition-colors font-body"
+      (click)="onToggleSort()"
+    >
+      <span class="material-symbols-outlined text-[16px]">sort</span>
+      <span>Sort by Date {{ sortDir() === 'asc' ? '↑' : '↓' }}</span>
+    </button>
+  </div>
+
+  <!-- Main bento grid -->
+  <div class="grid grid-cols-12 gap-6">
+
+    <!-- ── Task Table (9 cols) ────────────────────────────────────────────── -->
+    <div class="col-span-12 lg:col-span-9">
+      <div class="bg-surface-container-low rounded-xl overflow-hidden">
+
+        <!-- Loading skeleton -->
+        <div *ngIf="loading()" class="p-4 space-y-3">
+          <div *ngFor="let i of [1,2,3,4,5]" class="animate-pulse h-14 bg-surface-container-high rounded-xl"></div>
+        </div>
+
+        <!-- Empty state -->
+        <div *ngIf="!loading() && tasks().length === 0" class="py-16 text-center text-outline">
+          <span class="material-symbols-outlined text-[48px] opacity-40">format_list_bulleted</span>
+          <p class="mt-2 text-sm font-body">No tasks match your filters.</p>
+        </div>
+
+        <!-- Table -->
+        <table
+          *ngIf="!loading() && tasks().length > 0"
+          class="w-full text-left border-collapse"
+          cdkDropList
+          id="backlog-list"
+          [cdkDropListData]="tasks()"
+          [cdkDropListConnectedTo]="weekDayIds()"
+          (cdkDropListDropped)="onTableDrop($event)"
+        >
+          <thead>
+            <tr class="text-on-surface-variant/60 uppercase text-[10px] tracking-widest font-bold font-body">
+              <th class="px-6 py-4 w-8"></th>
+              <th class="px-6 py-4">Name</th>
+              <th class="px-6 py-4">Tag</th>
+              <th class="px-6 py-4">Status</th>
+              <th class="px-6 py-4">Due Date</th>
+              <th class="px-6 py-4 w-10"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/10">
+            <tr
+              *ngFor="let task of tasks()"
+              cdkDrag
+              [cdkDragData]="task"
+              class="group transition-all"
+              [class.hover:bg-surface-container-lowest]="task.status !== 'done'"
+              [class.cursor-grab]="task.status !== 'done'"
+              [class.active:cursor-grabbing]="task.status !== 'done'"
+              [class.opacity-60]="task.status === 'done'"
+              (click)="onRowClick(task)"
+            >
+              <!-- Drag handle / status icon -->
+              <td class="px-4 py-4 w-8">
+                <span
+                  *ngIf="task.status !== 'done'"
+                  class="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-[20px]"
+                  cdkDragHandle
+                >drag_indicator</span>
+                <span
+                  *ngIf="task.status === 'done'"
+                  class="material-symbols-outlined text-outline text-[20px]"
+                  style="font-variation-settings: 'FILL' 1"
+                >check_circle</span>
+              </td>
+
+              <!-- Name + dependency indicator -->
+              <td class="px-6 py-4">
+                <div class="flex items-start gap-1">
+                  <div>
+                    <div
+                      class="font-headline font-semibold text-sm"
+                      [class.text-on-surface]="task.status !== 'done'"
+                      [class.text-outline]="task.status === 'done'"
+                      [class.line-through]="task.status === 'done'"
+                    >{{ task.title }}</div>
+                    <div *ngIf="task.description" class="text-[11px] text-outline mt-0.5 font-body">
+                      {{ task.description }}
+                    </div>
+                  </div>
+                  <span
+                    *ngIf="hasDependencies(task)"
+                    class="material-symbols-outlined text-[14px] text-primary/40 mt-0.5"
+                    title="Has dependencies"
+                  >account_tree</span>
+                </div>
+              </td>
+
+              <!-- Tag chips -->
+              <td class="px-6 py-4">
+                <ng-container *ngFor="let tagId of task.tagIds">
+                  <ng-container *ngIf="tagById(tagId) as tag">
+                    <span
+                      class="px-2 py-1 rounded text-[10px] font-bold tracking-wide uppercase font-body"
+                      [style.background-color]="tag.color + '33'"
+                      [style.color]="tag.color"
+                    >{{ tag.name }}</span>
+                  </ng-container>
+                </ng-container>
+                <span *ngIf="task.tagIds.length === 0" class="text-outline text-xs">—</span>
+              </td>
+
+              <!-- Status indicator -->
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <div
+                    class="w-1 h-4 rounded-full"
+                    [class.bg-secondary]="task.status === 'in-progress'"
+                    [class.bg-outline-variant]="task.status === 'backlog'"
+                    *ngIf="task.status !== 'done'"
+                  ></div>
+                  <span
+                    class="text-xs font-medium font-body capitalize"
+                    [class.opacity-60]="task.status === 'backlog'"
+                    [class.text-outline]="task.status === 'done'"
+                  >
+                    {{ task.status === 'in-progress' ? 'In Progress' : (task.status | titlecase) }}
+                  </span>
+                </div>
+              </td>
+
+              <!-- Due date -->
+              <td class="px-6 py-4">
+                <span
+                  *ngIf="task.dueDate"
+                  class="text-xs font-medium font-body"
+                  [class.text-on-surface-variant]="task.status !== 'done'"
+                  [class.text-outline]="task.status === 'done'"
+                >
+                  {{ task.dueDate | date: 'MMM d, y' }}
+                </span>
+                <span *ngIf="!task.dueDate" class="text-outline text-xs">—</span>
+              </td>
+
+              <!-- More actions (non-functional) -->
+              <td class="px-6 py-4">
+                <!-- TODO: context menu (edit, delete, schedule to day) -->
+                <button
+                  *ngIf="task.status !== 'done'"
+                  class="opacity-0 group-hover:opacity-100 transition-opacity"
+                  (click)="$event.stopPropagation()"
+                >
+                  <span class="material-symbols-outlined text-outline text-[20px]">more_vert</span>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Right Sidebar (3 cols) ─────────────────────────────────────────── -->
+    <div class="col-span-12 lg:col-span-3 space-y-6">
+
+      <!-- Quick Schedule panel -->
+      <div class="bg-surface-container-low p-6 rounded-xl">
+        <h3 class="font-headline font-bold text-lg text-on-surface mb-1">Quick Schedule</h3>
+        <p class="text-xs text-on-surface-variant opacity-70 mb-6 font-body">
+          Drag tasks here to assign to current week.
+        </p>
+
+        <div class="space-y-4">
+          <div
+            *ngFor="let day of weekDays()"
+            cdkDropList
+            [id]="'day-' + day.isoDate"
+            [cdkDropListData]="[]"
+            [cdkDropListConnectedTo]="['backlog-list']"
+            (cdkDropListDropped)="onDropToDay($event, day.isoDate)"
+            class="p-4 border-2 border-dashed border-outline-variant/30 rounded-xl bg-surface/50 hover:bg-white transition-all flex flex-col gap-2"
+          >
+            <div class="flex justify-between items-center">
+              <span
+                class="text-xs font-bold uppercase tracking-tighter font-body"
+                [class.text-primary]="day.isToday"
+                [class.text-on-surface-variant]="!day.isToday"
+              >{{ day.label }}</span>
+            </div>
+            <div class="h-12 flex items-center justify-center text-[11px] text-outline italic font-body">
+              Drop task here
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats card -->
+      <div
+        *ngIf="completionRate()"
+        class="relative overflow-hidden rounded-xl bg-primary p-6 text-on-primary h-48 flex flex-col justify-end"
+      >
+        <div class="absolute top-0 right-0 p-8 opacity-10 scale-150">
+          <span class="material-symbols-outlined text-[80px]">auto_awesome</span>
+        </div>
+        <div class="text-[42px] font-headline font-extrabold leading-none mb-1">
+          {{ completionRate()!.rate }}%
+        </div>
+        <div class="text-sm font-body opacity-80 leading-tight">
+          {{ completionRate()!.message }}
+        </div>
+      </div>
+
+      <!-- Mindful Tip card -->
+      <div
+        *ngIf="tipCard()"
+        class="bg-tertiary-fixed p-5 rounded-xl"
+      >
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-tertiary-container">lightbulb</span>
+          <div>
+            <div class="font-headline font-bold text-tertiary text-sm mb-1">Mindful Tip</div>
+            <p class="text-xs text-tertiary leading-relaxed opacity-80 font-body">
+              {{ tipCard()!.message }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- FAB (same TODO as Add Task button) -->
+<button
+  class="fixed bottom-10 right-10 w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50"
+  (click)="onAddTask()"
+>
+  <span class="material-symbols-outlined">add</span>
+</button>
