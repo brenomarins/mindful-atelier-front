@@ -8,6 +8,7 @@ import { TaskDetailComponent } from './task-detail.component';
 import { TaskService } from '../../core/services/task.service';
 import { TagService } from '../../core/services/tag.service';
 import { SessionService } from '../../core/services/session.service';
+import { DependencyService } from '../../core/services/dependency.service';
 
 describe('TaskDetailComponent', () => {
   let fixture: ComponentFixture<TaskDetailComponent>;
@@ -15,6 +16,7 @@ describe('TaskDetailComponent', () => {
   let taskSvc: jasmine.SpyObj<TaskService>;
   let tagSvc: jasmine.SpyObj<TagService>;
   let sessionSvc: jasmine.SpyObj<SessionService>;
+  let depSvc: jasmine.SpyObj<DependencyService>;
 
   const mockTask = {
     id: 'task-1', title: 'Write Tests', description: 'Test all the things',
@@ -25,11 +27,15 @@ describe('TaskDetailComponent', () => {
   beforeEach(() => {
     taskSvc    = jasmine.createSpyObj('TaskService',   ['get', 'list']);
     tagSvc     = jasmine.createSpyObj('TagService',    ['list']);
-    sessionSvc = jasmine.createSpyObj('SessionService', ['getOpen']);
+    sessionSvc = jasmine.createSpyObj('SessionService', ['getOpen', 'listByTask']);
+    depSvc     = jasmine.createSpyObj('DependencyService', ['getForTask', 'create', 'delete']);
 
     taskSvc.get.and.returnValue(of(mockTask));
     tagSvc.list.and.returnValue(of([]));
+    taskSvc.list.and.returnValue(of([]));
     sessionSvc.getOpen.and.returnValue(of(null));
+    sessionSvc.listByTask.and.returnValue(of([]));
+    depSvc.getForTask.and.returnValue(of({ taskId: 'task-1', prerequisites: [], dependents: [] }));
 
     TestBed.configureTestingModule({
       imports: [TaskDetailComponent],
@@ -37,9 +43,10 @@ describe('TaskDetailComponent', () => {
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: TaskService,    useValue: taskSvc },
-        { provide: TagService,     useValue: tagSvc },
-        { provide: SessionService, useValue: sessionSvc },
+        { provide: TaskService,       useValue: taskSvc },
+        { provide: TagService,        useValue: tagSvc },
+        { provide: SessionService,    useValue: sessionSvc },
+        { provide: DependencyService, useValue: depSvc },
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { paramMap: { get: () => 'task-1' } } },
