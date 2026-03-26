@@ -40,11 +40,9 @@
     <!-- 3-Column Bento Grid -->
     <div class="grid grid-cols-12 gap-6 items-start">
 
-      <!-- Left (4 cols): Timer — placeholder until PomodoroTimerComponent is built -->
-      <div class="col-span-12 lg:col-span-4">
-        <div class="bg-primary-container text-on-primary-container p-8 rounded-xl text-center opacity-50">
-          Timer coming soon…
-        </div>
+      <!-- Left (4 cols): Timer -->
+      <div class="col-span-12 lg:col-span-4 space-y-6">
+        <app-pomodoro-timer [taskId]="taskId()" [openSession]="openSession()" />
       </div>
 
       <!-- Center (5 cols): Subtasks — placeholder -->

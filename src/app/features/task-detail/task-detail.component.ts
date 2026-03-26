@@ -8,11 +8,12 @@ import { SessionService } from '../../core/services/session.service';
 import { Task } from '../../core/models/task.model';
 import { Tag } from '../../core/models/tag.model';
 import { Session } from '../../core/models/session.model';
+import { PomodoroTimerComponent } from './components/pomodoro-timer/pomodoro-timer.component';
 
 @Component({
   selector: 'app-task-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PomodoroTimerComponent],
   templateUrl: './task-detail.component.html',
 })
 export class TaskDetailComponent implements OnInit {
