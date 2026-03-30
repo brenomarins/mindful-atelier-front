@@ -210,4 +210,16 @@ describe('JournalComponent', () => {
     component.saveDraft();
     expect(component.saving()).toBeFalse();
   });
+
+  it('saveError is cleared when a new save is attempted after a failure', () => {
+    component.mood.set('good');
+    journalSvc.upsert.and.returnValue(throwError(() => new Error('fail')));
+    component.saveDraft();
+    expect(component.saveError()).toBeTruthy();
+
+    // Retry — saveError should clear at start of next upsert
+    journalSvc.upsert.and.returnValue(of(MOCK_ENTRY));
+    component.saveDraft();
+    expect(component.saveError()).toBeNull();
+  });
 });

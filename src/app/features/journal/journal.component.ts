@@ -1,15 +1,12 @@
 import {
-  Component, inject, signal, computed, effect,
+  Component, inject, signal, computed, effect, DestroyRef,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { JournalService } from '../../core/services/journal.service';
 import { Mood, JournalEntry, JournalEntryRequest } from '../../core/models/journal.model';
-
-function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 @Component({
   selector: 'app-journal',
@@ -20,9 +17,10 @@ function todayIso(): string {
 export class JournalComponent {
   private journalSvc = inject(JournalService);
   private router     = inject(Router);
+  private destroyRef = inject(DestroyRef);
 
   // ── State signals ──────────────────────────────────────────────────────────
-  selectedDate = signal<string>(todayIso());
+  selectedDate = signal<string>(this.todayIso());
   entry        = signal<JournalEntry | null>(null);
   mood         = signal<Mood | null>(null);
   achievements = signal<string>('');
@@ -35,7 +33,7 @@ export class JournalComponent {
   // ── Computed ───────────────────────────────────────────────────────────────
   selectedDateObj = computed(() => new Date(this.selectedDate() + 'T12:00:00'));
   canSave = computed(() => this.mood() !== null && !this.saving() && !this.loading());
-  isToday = computed(() => this.selectedDate() === todayIso());
+  isToday = computed(() => this.selectedDate() === this.todayIso());
 
   // ── Mood config ────────────────────────────────────────────────────────────
   readonly moods: { value: Mood; label: string; icon: string }[] = [
@@ -83,7 +81,9 @@ export class JournalComponent {
     this.loadError.set(null);
     this.saveError.set(null);
 
-    this.journalSvc.getByDate(date).subscribe({
+    this.journalSvc.getByDate(date).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
       next: entry => {
         this.entry.set(entry);
         this.mood.set(entry.mood);
@@ -92,7 +92,7 @@ export class JournalComponent {
         this.loading.set(false);
       },
       error: (err: HttpErrorResponse) => {
-        if ((err as any).status === 404) {
+        if (err.status === 404) {
           this.entry.set(null);
           this.mood.set(null);
           this.achievements.set('');
@@ -115,8 +115,11 @@ export class JournalComponent {
       difficulties: this.difficulties(),
     };
 
-    this.journalSvc.upsert(this.selectedDate(), req).subscribe({
-      next: () => {
+    this.journalSvc.upsert(this.selectedDate(), req).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: (saved) => {
+        this.entry.set(saved);
         this.saving.set(false);
         if (navigateAfter) {
           this.router.navigate(['/schedule']);
@@ -127,5 +130,9 @@ export class JournalComponent {
         this.saveError.set('Failed to save — please try again');
       },
     });
+  }
+
+  private todayIso(): string {
+    return new Date().toISOString().slice(0, 10);
   }
 }
