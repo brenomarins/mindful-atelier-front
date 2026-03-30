@@ -28,6 +28,12 @@ export const routes: Routes = [
       import('./features/dependencies/dependencies.component').then(m => m.DependenciesComponent),
   },
   {
+    path: 'tasks/new',
+    loadComponent: () =>
+      import('./features/create-task/create-task.component')
+        .then(m => m.CreateTaskComponent),
+  },
+  {
     path: 'tasks/:id',
     loadComponent: () =>
       import('./features/task-detail/task-detail.component').then(m => m.TaskDetailComponent),

@@ -65,6 +65,8 @@ export class BacklogComponent implements OnInit {
 
   weekDayIds = computed(() => this.weekDays().map(d => 'day-' + d.isoDate));
 
+  readonly emptyTaskList: Task[] = [];
+
   // ── Search debounce ────────────────────────────────────────────────────────
   private searchSubject = new Subject<string>();
 
@@ -142,8 +144,9 @@ export class BacklogComponent implements OnInit {
     this.router.navigate(['/tasks', task.id]);
   }
 
-  // TODO: navigate to "Create New Task" page when implemented
-  onAddTask(): void { /* noop */ }
+  onAddTask(): void {
+    this.router.navigate(['/tasks/new']);
+  }
 
   onTableDrop(event: CdkDragDrop<Task[]>): void {
     if (event.previousContainer === event.container) {

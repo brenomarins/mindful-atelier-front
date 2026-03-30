@@ -84,6 +84,12 @@ describe('BacklogComponent', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/tasks', '1']);
   });
 
+  it('onAddTask navigates to /tasks/new', () => {
+    spyOn(router, 'navigate');
+    component.onAddTask();
+    expect(router.navigate).toHaveBeenCalledWith(['/tasks/new']);
+  });
+
   it('onStatusChipClick updates statusFilter signal', () => {
     component.onStatusChipClick('in-progress');
     expect(component.statusFilter()).toBe('in-progress');

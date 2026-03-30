@@ -254,7 +254,7 @@
             *ngFor="let day of weekDays()"
             cdkDropList
             [id]="'day-' + day.isoDate"
-            [cdkDropListData]="[]"
+            [cdkDropListData]="emptyTaskList"
             [cdkDropListConnectedTo]="['backlog-list']"
             (cdkDropListDropped)="onDropToDay($event, day.isoDate)"
             class="p-4 border-2 border-dashed border-outline-variant/30 rounded-xl bg-surface/50 hover:bg-white transition-all flex flex-col gap-2"
