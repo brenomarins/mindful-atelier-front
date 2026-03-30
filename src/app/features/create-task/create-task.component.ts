@@ -91,9 +91,64 @@ export class CreateTaskComponent implements OnInit {
       ids.includes(id) ? ids.filter(i => i !== id) : [...ids, id],
     );
   }
-  createTag(): void {}
+  createTag(): void {
+    this.tagSvc.create({ name: this.newTagName().trim(), color: this.newTagColor() })
+      .subscribe({
+        next: tag => {
+          this.tags.update(ts => [...ts, tag]);
+          this.selectedTagIds.update(ids => [...ids, tag.id]);
+          this.newTagName.set('');
+          this.tagError.set(null);
+          this.showTagForm.set(false);
+        },
+        error: () => this.tagError.set('Could not create tag. Try again.'),
+      });
+  }
 
-  // ── Save / navigation (stubs) ───────────────────────────────────────────────
-  save(): void {}
-  discard(): void {}
+  // ── Save / navigation ───────────────────────────────────────────────────────
+  save(): void {
+    if (!this.title().trim()) {
+      this.error.set('Task title is required.');
+      return;
+    }
+    this.saving.set(true);
+    this.error.set(null);
+
+    const req: CreateTaskRequest = { title: this.title().trim(), status: 'backlog' };
+    if (this.description().trim())     req.description  = this.description().trim();
+    if (this.scheduledDay())           req.scheduledDay = this.scheduledDay()!;
+    if (this.dueDate())                req.dueDate      = this.dueDate()!;
+    if (this.selectedTagIds().length)  req.tagIds       = this.selectedTagIds();
+
+    this.taskSvc.create(req).subscribe({
+      next: task => {
+        // toArray() is required: if there are no subtasks, from([]) calls complete
+        // without emitting — toArray() converts complete into next([]), guaranteeing navigation.
+        from(this.subtasks().filter(s => s.title.trim())).pipe(
+          concatMap((s, i) =>
+            this.taskSvc.create({
+              title:    s.title.trim(),
+              parentId: task.id,
+              status:   'backlog',
+              order:    i,
+            }).pipe(catchError(() => EMPTY)),
+          ),
+          toArray(),
+        ).subscribe({
+          next: () => {
+            this.saving.set(false);
+            this.router.navigate(['/tasks', task.id]);
+          },
+        });
+      },
+      error: () => {
+        this.error.set('Failed to create task. Please try again.');
+        this.saving.set(false);
+      },
+    });
+  }
+
+  discard(): void {
+    this.location.back();
+  }
 }
