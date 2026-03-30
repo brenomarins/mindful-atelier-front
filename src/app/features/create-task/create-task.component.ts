@@ -64,13 +64,33 @@ export class CreateTaskComponent implements OnInit {
   }
 
   // ── Subtask management (stubs) ───────────────────────────────────────────────
-  addSubtask(): void {}
-  updateSubtask(_index: number, _title: string): void {}
-  removeSubtask(_index: number): void {}
-  onSubtaskDrop(_event: CdkDragDrop<SubtaskDraft[]>): void {}
+  addSubtask(): void {
+    // TODO: auto-focus — @ViewChildren('subtaskInput') inputs: QueryList<ElementRef> — focus last after update
+    this.subtasks.update(list => [...list, { title: '' }]);
+  }
+
+  updateSubtask(index: number, title: string): void {
+    this.subtasks.update(list =>
+      list.map((s, i) => i === index ? { title } : s),
+    );
+  }
+
+  removeSubtask(index: number): void {
+    this.subtasks.update(list => list.filter((_, i) => i !== index));
+  }
+
+  onSubtaskDrop(event: CdkDragDrop<SubtaskDraft[]>): void {
+    const updated = [...this.subtasks()];
+    moveItemInArray(updated, event.previousIndex, event.currentIndex);
+    this.subtasks.set(updated);
+  }
 
   // ── Tag picker (stubs) ──────────────────────────────────────────────────────
-  toggleTag(_id: string): void {}
+  toggleTag(id: string): void {
+    this.selectedTagIds.update(ids =>
+      ids.includes(id) ? ids.filter(i => i !== id) : [...ids, id],
+    );
+  }
   createTag(): void {}
 
   // ── Save / navigation (stubs) ───────────────────────────────────────────────
