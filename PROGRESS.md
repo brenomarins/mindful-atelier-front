@@ -10,7 +10,7 @@ Update the status column as each page/feature is completed.
 | Weekly Schedule | ✅ Done | 7-day grid, CDK drag-drop, daily reflection strip |
 | Task Backlog | ✅ Done | Table with dep indicators, combined status+tag filters, search, sort, Quick Schedule CDK drag-drop |
 | Create New Task | ✅ Done | Full page form: title, description, subtasks (CDK drag-drop), dates, tags (inline create), non-functional dependencies placeholder |
-| Task Detail | ⬜ Not Started | Detail panel, subtasks, Pomodoro timer |
+| Task Detail | ✅ Done | Pomodoro timer (session resume, stats), subtask CRUD + drag-drop, dependency panel (add/remove prerequisites), read-only task hero |
 | Dependencies Canvas | ⬜ Not Started | SVG graph, draggable nodes, canvas positions |
 | Daily Journal | ⬜ Not Started | Mood selector, achievements/difficulties text, upsert |
 | Reports | ⬜ Not Started | Doughnut (tag allocation), line chart (mood trend), focus score |
@@ -21,5 +21,5 @@ Update the status column as each page/feature is completed.
 - ✅ Done
 
 ## Implementation Order
-Pages are implemented one at a time. Current: **Task Detail**.
+Pages are implemented one at a time. Current: **Dependencies Canvas**.
 See `E:\codigos\plan\docs\superpowers\plans\2026-03-25-mindful-atelier-frontend.md` for the full plan.
