@@ -102,6 +102,12 @@ describe('JournalComponent', () => {
     expect(component.canSave()).toBeFalse();
   });
 
+  it('canSave is false while saving', () => {
+    component.mood.set('good');
+    component.saving.set(true);
+    expect(component.canSave()).toBeFalse();
+  });
+
   it('prevDay() decrements selectedDate by one day', () => {
     const before = component.selectedDate();
     component.prevDay();

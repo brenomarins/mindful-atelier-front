@@ -1,5 +1,5 @@
 import {
-  Component, inject, signal, computed, effect, DestroyRef,
+  Component, inject, signal, computed, effect,
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
@@ -20,7 +20,6 @@ function todayIso(): string {
 export class JournalComponent {
   private journalSvc = inject(JournalService);
   private router     = inject(Router);
-  private destroyRef = inject(DestroyRef);
 
   // ── State signals ──────────────────────────────────────────────────────────
   selectedDate = signal<string>(todayIso());
