@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { TimeAllocationChartComponent, TagBreakdown } from './time-allocation-chart.component';
 
@@ -17,7 +16,6 @@ describe('TimeAllocationChartComponent', () => {
     TestBed.configureTestingModule({
       imports: [TimeAllocationChartComponent],
       providers: [provideCharts(withDefaultRegisterables())],
-      schemas: [NO_ERRORS_SCHEMA],
     });
     fixture   = TestBed.createComponent(TimeAllocationChartComponent);
     component = fixture.componentInstance;
@@ -54,5 +52,36 @@ describe('TimeAllocationChartComponent', () => {
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector('[data-testid="skeleton"]')).toBeTruthy();
+  });
+
+  it('shows "No data yet" when data is empty', () => {
+    component.data = [];
+    component.totalHours = 0;
+    component.loading = false;
+    component.ngOnChanges();
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('No data yet');
+  });
+
+  it('shows chart (not skeleton) when loading=false', () => {
+    component.data = MOCK_DATA;
+    component.totalHours = 38;
+    component.loading = false;
+    component.ngOnChanges();
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('[data-testid="skeleton"]')).toBeNull();
+    expect(el.querySelector('canvas')).toBeTruthy();
+  });
+
+  it('displays totalHours in the center label', () => {
+    component.data = MOCK_DATA;
+    component.totalHours = 38;
+    component.loading = false;
+    component.ngOnChanges();
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('38h');
   });
 });
