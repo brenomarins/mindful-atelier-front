@@ -47,6 +47,19 @@ export interface StreakDay {
         </p>
         <app-weekly-progress-chart [trend]="trend" [loading]="false" />
       </div>
+
+      <!-- Momentum Streak strip -->
+      <div class="mt-6 bg-surface-container-low rounded-xl p-6">
+        <p class="text-xs font-label text-on-surface-variant mb-4">Momentum Streak</p>
+        <div class="flex gap-2">
+          @for (day of streakDays; track day.label) {
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold"
+                 [class]="day.active ? 'bg-secondary text-white' : 'bg-surface-variant text-on-surface-variant'">
+              {{ day.label }}
+            </div>
+          }
+        </div>
+      </div>
     }
   `,
 })
@@ -62,7 +75,7 @@ export class FocusSummaryCardComponent implements OnChanges {
   streakDays: StreakDay[] = [];
 
   ngOnChanges(): void {
-    const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    const DAY_LABELS = ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'];
     this.streakDays = DAY_LABELS.map((label, i) => ({
       label,
       active: (this.trend[i]?.hours ?? 0) > 0,

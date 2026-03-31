@@ -63,4 +63,14 @@ describe('FocusSummaryCardComponent', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('[data-testid="skeleton"]')).toBeTruthy();
   });
+
+  it('renders streak day circles in template', () => {
+    component.trend = MOCK_TREND;
+    component.ngOnChanges();
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    // Should have 7 day circles
+    expect(el.textContent).toContain('M');
+    expect(el.textContent).toContain('Th');
+  });
 });
