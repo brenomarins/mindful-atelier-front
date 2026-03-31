@@ -2,10 +2,11 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { StatsResponse } from '../models/stats.model';
 
 export interface CompletionStats {
-  rate: number;     // 0–100
-  message: string;  // e.g. "You're doing great this month."
+  rate: number;
+  message: string;
 }
 
 export interface TipCard {
@@ -22,6 +23,12 @@ export interface TipCard {
 export class StatsService {
   private http = inject(HttpClient);
   private base = environment.apiUrl;
+
+  getStats(filter: 'week' | 'all' = 'week'): Observable<StatsResponse> {
+    return this.http.get<StatsResponse>(`${this.base}/stats`, {
+      params: { filter },
+    });
+  }
 
   getCompletion(): Observable<CompletionStats> {
     return this.http.get<CompletionStats>(`${this.base}/stats/completion`);

@@ -4,6 +4,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { StatsService } from './stats.service';
 import { environment } from '../../../environments/environment';
+import { StatsResponse } from '../models/stats.model';
 
 describe('StatsService', () => {
   let service: StatsService;
@@ -31,5 +32,19 @@ describe('StatsService', () => {
     const req = http.expectOne(`${environment.apiUrl}/tip-card`);
     expect(req.request.method).toBe('GET');
     req.flush({ message: 'The backlog is a space for storage, not stress.' });
+  });
+
+  it('getStats() calls GET /stats?filter=week by default', () => {
+    service.getStats().subscribe();
+    const req = http.expectOne(`${environment.apiUrl}/stats?filter=week`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ totalMinutesFocused: 120, totalCompleted: 5, totalInterrupted: 1, completionRate: 0.83, weeklyTrend: [], taskStats: [], dailyFocus: [] } as StatsResponse);
+  });
+
+  it('getStats("all") calls GET /stats?filter=all', () => {
+    service.getStats('all').subscribe();
+    const req = http.expectOne(`${environment.apiUrl}/stats?filter=all`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ totalMinutesFocused: 600, totalCompleted: 20, totalInterrupted: 3, completionRate: 0.87, weeklyTrend: [], taskStats: [], dailyFocus: [] } as StatsResponse);
   });
 });
