@@ -1,1 +1,175 @@
-<div></div>
+<!-- src/app/features/journal/journal.component.html -->
+<div class="ml-72 min-h-screen bg-tertiary-fixed">
+  <div class="px-10 py-10 max-w-5xl">
+
+    <!-- ── Header ─────────────────────────────────────────────────────────── -->
+    <div class="mb-8">
+      <h1 class="text-4xl font-extrabold font-headline text-on-surface tracking-tight">
+        Daily Journal
+      </h1>
+      <p class="text-sm font-body text-on-surface-variant mt-1">
+        Reflect, release, and recalibrate
+      </p>
+    </div>
+
+    <!-- ── Date Navigator ─────────────────────────────────────────────────── -->
+    <div class="inline-flex items-center gap-4 px-5 py-2.5 rounded-xl mb-8"
+         style="background: rgba(225,227,228,0.80); backdrop-filter: blur(20px);">
+      <button
+        (click)="prevDay()"
+        class="p-1 rounded-full hover:bg-surface-container transition-colors"
+        aria-label="Previous day">
+        <span class="material-symbols-outlined text-on-surface" aria-hidden="true">chevron_left</span>
+      </button>
+
+      <span class="font-headline font-bold text-on-surface text-sm min-w-[200px] text-center select-none">
+        {{ selectedDateObj() | date:'EEEE, MMMM d' }}
+      </span>
+
+      <button
+        (click)="nextDay()"
+        [disabled]="isToday()"
+        class="p-1 rounded-full hover:bg-surface-container transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+        aria-label="Next day">
+        <span class="material-symbols-outlined text-on-surface" aria-hidden="true">chevron_right</span>
+      </button>
+    </div>
+
+    <!-- ── Load error ─────────────────────────────────────────────────────── -->
+    @if (loadError()) {
+      <p class="text-error text-sm font-body mb-6" role="alert">
+        <span class="material-symbols-outlined text-sm align-middle mr-1">error</span>
+        {{ loadError() }}
+      </p>
+    }
+
+    <!-- ── Loading skeleton ───────────────────────────────────────────────── -->
+    @if (loading()) {
+      <div class="animate-pulse space-y-6 mb-8" aria-label="Loading journal entry">
+        <div class="flex gap-3">
+          @for (m of moods; track m.value) {
+            <div class="h-16 w-20 bg-tertiary-fixed-dim rounded-xl opacity-60"></div>
+          }
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="h-52 bg-tertiary-fixed-dim rounded-xl opacity-60"></div>
+          <div class="h-52 bg-tertiary-fixed-dim rounded-xl opacity-60"></div>
+        </div>
+      </div>
+    }
+
+    <!-- ── Main form (hidden while loading) ───────────────────────────────── -->
+    @if (!loading()) {
+
+      <!-- Mood Selector -->
+      <div class="mb-8">
+        <p class="text-xs font-label uppercase tracking-widest text-on-surface-variant mb-3">
+          How are you feeling today?
+        </p>
+        <div class="flex gap-3 flex-wrap">
+          @for (m of moods; track m.value) {
+            <button
+              type="button"
+              (click)="mood.set(m.value)"
+              [disabled]="saving()"
+              class="flex flex-col items-center gap-1.5 px-5 py-3 rounded-xl transition-all duration-200 font-body text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              [class.bg-primary]="mood() === m.value"
+              [class.text-on-primary]="mood() === m.value"
+              [class.scale-105]="mood() === m.value"
+              [class.shadow-sm]="mood() === m.value"
+              [class.bg-surface-container-lowest]="mood() !== m.value"
+              [class.text-on-surface-variant]="mood() !== m.value"
+              [attr.aria-pressed]="mood() === m.value">
+              <span class="material-symbols-outlined text-2xl" aria-hidden="true">{{ m.icon }}</span>
+              <span>{{ m.label }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Two-column textareas -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+
+        <!-- Achievements -->
+        <div class="flex flex-col">
+          <label class="flex items-center gap-2 text-xs font-label uppercase tracking-widest text-on-surface-variant mb-3">
+            <span class="material-symbols-outlined text-base text-primary-fixed" aria-hidden="true">stars</span>
+            Achievements
+          </label>
+          <div class="relative group">
+            <textarea
+              class="peer w-full min-h-[200px] bg-transparent font-body text-on-surface text-sm resize-none outline-none placeholder:text-on-surface-variant/50 pb-3 disabled:opacity-50 disabled:cursor-not-allowed"
+              placeholder="What did you accomplish today?"
+              [value]="achievements()"
+              (input)="achievements.set($any($event.target).value)"
+              [disabled]="loading() || saving()">
+            </textarea>
+            <!-- base underline -->
+            <div class="absolute bottom-0 left-0 h-px w-full bg-outline-variant/30 rounded-full"></div>
+            <!-- focus underline (Tailwind peer trick) -->
+            <div class="absolute bottom-0 left-0 h-px bg-primary rounded-full w-0 transition-all duration-300 peer-focus:w-full"></div>
+          </div>
+        </div>
+
+        <!-- Difficulties -->
+        <div class="flex flex-col">
+          <label class="flex items-center gap-2 text-xs font-label uppercase tracking-widest text-on-surface-variant mb-3">
+            <span class="material-symbols-outlined text-base text-error-container" aria-hidden="true">bolt</span>
+            Difficulties
+          </label>
+          <div class="relative group">
+            <textarea
+              class="peer w-full min-h-[200px] bg-transparent font-body text-on-surface text-sm resize-none outline-none placeholder:text-on-surface-variant/50 pb-3 disabled:opacity-50 disabled:cursor-not-allowed"
+              placeholder="What challenged you today?"
+              [value]="difficulties()"
+              (input)="difficulties.set($any($event.target).value)"
+              [disabled]="loading() || saving()">
+            </textarea>
+            <div class="absolute bottom-0 left-0 h-px w-full bg-outline-variant/30 rounded-full"></div>
+            <div class="absolute bottom-0 left-0 h-px bg-primary rounded-full w-0 transition-all duration-300 peer-focus:w-full"></div>
+          </div>
+        </div>
+
+      </div>
+    }
+
+    <!-- ── Save error ──────────────────────────────────────────────────────── -->
+    @if (saveError()) {
+      <p class="text-error text-sm font-body mb-4" role="alert">
+        <span class="material-symbols-outlined text-sm align-middle mr-1">error</span>
+        {{ saveError() }}
+      </p>
+    }
+
+    <!-- ── Action row ──────────────────────────────────────────────────────── -->
+    <div class="flex items-center gap-4">
+      <!-- Save Draft — secondary glass button -->
+      <button
+        type="button"
+        (click)="saveDraft()"
+        [disabled]="!canSave()"
+        class="px-6 py-2.5 rounded-full font-body font-semibold text-sm text-on-surface transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white/60"
+        style="background: rgba(255,255,255,0.40); backdrop-filter: blur(8px);">
+        Save Draft
+      </button>
+
+      <!-- Complete Reflection — primary button with spinner -->
+      <button
+        type="button"
+        (click)="completeReflection()"
+        [disabled]="!canSave()"
+        class="flex items-center gap-2 bg-primary text-on-primary px-6 py-2.5 rounded-full font-body font-semibold text-sm hover:opacity-90 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed">
+        @if (saving()) {
+          <span class="material-symbols-outlined text-sm animate-spin" aria-hidden="true">progress_activity</span>
+          Saving…
+        } @else {
+          <span class="material-symbols-outlined text-sm" aria-hidden="true">auto_awesome</span>
+          Complete Reflection
+        }
+      </button>
+    </div>
+
+    <!-- TODO: summary cards (energy level, weekly focus) -->
+
+  </div>
+</div>
