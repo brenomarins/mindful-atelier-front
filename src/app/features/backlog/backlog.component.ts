@@ -46,6 +46,9 @@ export class BacklogComponent implements OnInit {
   completionRate = signal<CompletionStats | null>(null);
   tipCard        = signal<TipCard | null>(null);
 
+  private togglingIds = new Set<string>();
+  private draggingTaskId = signal<string | null>(null);
+
   // ── Computed ───────────────────────────────────────────────────────────────
   weekDays = computed<WeekDay[]>(() => {
     const today    = new Date();
@@ -150,6 +153,9 @@ export class BacklogComponent implements OnInit {
 
   onStatusToggle(event: Event, task: Task): void {
     event.stopPropagation();
+    if (this.togglingIds.has(task.id)) return;
+    if (this.draggingTaskId() === task.id) return;
+    this.togglingIds.add(task.id);
     const newStatus: TaskStatus = task.status === 'done' ? 'backlog' : 'done';
     this.tasks.update(list =>
       list.map(t => t.id === task.id ? { ...t, status: newStatus } : t)
@@ -157,10 +163,22 @@ export class BacklogComponent implements OnInit {
     this.taskSvc.update(task.id, { status: newStatus })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        error: () => this.tasks.update(list =>
-          list.map(t => t.id === task.id ? { ...t, status: task.status } : t)
-        ),
+        next:  () => this.togglingIds.delete(task.id),
+        error: () => {
+          this.togglingIds.delete(task.id);
+          this.tasks.update(list =>
+            list.map(t => t.id === task.id ? { ...t, status: task.status } : t)
+          );
+        },
       });
+  }
+
+  onDragStarted(task: Task): void {
+    this.draggingTaskId.set(task.id);
+  }
+
+  onDragEnded(): void {
+    this.draggingTaskId.set(null);
   }
 
   onTableDrop(event: CdkDragDrop<Task[]>): void {

@@ -137,6 +137,8 @@
               [class.active:cursor-grabbing]="task.status !== 'done'"
               [class.opacity-60]="task.status === 'done'"
               (click)="onRowClick(task)"
+              (cdkDragStarted)="onDragStarted(task)"
+              (cdkDragEnded)="onDragEnded()"
             >
               <!-- Drag handle / status icon -->
               <td class="px-4 py-4 w-8">

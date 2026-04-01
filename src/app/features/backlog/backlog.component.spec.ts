@@ -6,7 +6,7 @@ import { BacklogComponent } from './backlog.component';
 import { TaskService } from '../../core/services/task.service';
 import { TagService } from '../../core/services/tag.service';
 import { StatsService } from '../../core/services/stats.service';
-import { of, throwError } from 'rxjs';
+import { of, throwError, Subject } from 'rxjs';
 import { Task } from '../../core/models/task.model';
 import { Tag } from '../../core/models/tag.model';
 
@@ -171,5 +171,17 @@ describe('BacklogComponent', () => {
     component.onStatusToggle(event, MOCK_TASKS[0]);
     expect(event.stopPropagation).toHaveBeenCalled();
     expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  it('onStatusToggle ignores rapid double-click while request is in-flight', () => {
+    // Use a subject to control when the observable completes
+    const subject$ = new Subject<Task>();
+    taskSvc.update.and.returnValue(subject$.asObservable());
+
+    component.onStatusToggle(new MouseEvent('click'), MOCK_TASKS[1]);
+    component.onStatusToggle(new MouseEvent('click'), MOCK_TASKS[1]);
+
+    // Only one update call should have been made
+    expect(taskSvc.update).toHaveBeenCalledTimes(1);
   });
 });
