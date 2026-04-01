@@ -142,7 +142,7 @@
               <td class="px-4 py-4 w-8">
                 <span
                   *ngIf="task.status !== 'done'"
-                  class="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-[20px] cursor-pointer hover:opacity-60 transition-opacity"
+                  class="material-symbols-outlined text-outline text-[20px] cursor-pointer hover:opacity-60 transition-opacity"
                   cdkDragHandle
                   (click)="onStatusToggle($event, task)"
                 >drag_indicator</span>

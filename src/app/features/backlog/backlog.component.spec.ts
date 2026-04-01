@@ -140,11 +140,11 @@ describe('BacklogComponent', () => {
 
   it('onStatusToggle marks a non-done task as done (optimistic)', () => {
     taskSvc.update.and.returnValue(of({
-      ...MOCK_TASKS[0], status: 'done' as const,
+      ...MOCK_TASKS[1], status: 'done' as const,
     }));
-    component.onStatusToggle(new MouseEvent('click'), MOCK_TASKS[0]);
-    expect(taskSvc.update).toHaveBeenCalledWith('1', { status: 'done' });
-    expect(component.tasks().find(t => t.id === '1')!.status).toBe('done');
+    component.onStatusToggle(new MouseEvent('click'), MOCK_TASKS[1]);
+    expect(taskSvc.update).toHaveBeenCalledWith('2', { status: 'done' });
+    expect(component.tasks().find(t => t.id === '2')!.status).toBe('done');
   });
 
   it('onStatusToggle marks a done task as backlog', () => {
@@ -161,5 +161,15 @@ describe('BacklogComponent', () => {
     component.onStatusToggle(new MouseEvent('click'), MOCK_TASKS[0]);
     // After error: status should revert to original 'in-progress'
     expect(component.tasks().find(t => t.id === '1')!.status).toBe('in-progress');
+  });
+
+  it('onStatusToggle stops propagation so onRowClick does not fire', () => {
+    taskSvc.update.and.returnValue(of({ ...MOCK_TASKS[0], status: 'done' as const }));
+    spyOn(router, 'navigate');
+    const event = new MouseEvent('click');
+    spyOn(event, 'stopPropagation');
+    component.onStatusToggle(event, MOCK_TASKS[0]);
+    expect(event.stopPropagation).toHaveBeenCalled();
+    expect(router.navigate).not.toHaveBeenCalled();
   });
 });

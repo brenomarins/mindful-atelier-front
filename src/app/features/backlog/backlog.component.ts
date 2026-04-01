@@ -154,11 +154,13 @@ export class BacklogComponent implements OnInit {
     this.tasks.update(list =>
       list.map(t => t.id === task.id ? { ...t, status: newStatus } : t)
     );
-    this.taskSvc.update(task.id, { status: newStatus }).subscribe({
-      error: () => this.tasks.update(list =>
-        list.map(t => t.id === task.id ? { ...t, status: task.status } : t)
-      ),
-    });
+    this.taskSvc.update(task.id, { status: newStatus })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        error: () => this.tasks.update(list =>
+          list.map(t => t.id === task.id ? { ...t, status: task.status } : t)
+        ),
+      });
   }
 
   onTableDrop(event: CdkDragDrop<Task[]>): void {
