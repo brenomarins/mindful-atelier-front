@@ -37,12 +37,6 @@ describe('TaskCardComponent', () => {
     expect(component.statusIcon).toBe('check_circle');
   });
 
-  it('emits next status on toggle', () => {
-    const spy = spyOn(component.statusChange, 'emit');
-    component.toggleStatus(); // backlog → in-progress
-    expect(spy).toHaveBeenCalledWith('in-progress');
-  });
-
   it('renders a checkbox instead of a button', () => {
     expect(fixture.nativeElement.querySelector('input[type="checkbox"]')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('button')).toBeNull();

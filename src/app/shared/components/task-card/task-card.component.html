@@ -21,7 +21,7 @@
     <input
       type="checkbox"
       [checked]="isDone"
-      [attr.aria-label]="isDone ? 'Mark as incomplete' : 'Mark as complete'"
+      [attr.aria-label]="'Mark ' + task.title + (isDone ? ' as incomplete' : ' as complete')"
       (click)="$event.stopPropagation()"
       (change)="statusChange.emit($any($event.target).checked ? 'done' : 'backlog')"
       class="w-4 h-4 cursor-pointer accent-primary mt-0.5"

@@ -166,11 +166,24 @@ describe('BacklogComponent', () => {
   it('onStatusToggle stops propagation so onRowClick does not fire', () => {
     taskSvc.update.and.returnValue(of({ ...MOCK_TASKS[0], status: 'done' as const }));
     spyOn(router, 'navigate');
-    const event = new MouseEvent('click');
+    const event = new Event('change');
     spyOn(event, 'stopPropagation');
     component.onStatusToggle(event, MOCK_TASKS[0]);
     expect(event.stopPropagation).toHaveBeenCalled();
     expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  it('onStatusToggle: in-progress task goes to done when checked, then backlog when unchecked', () => {
+    // MOCK_TASKS[0] is 'in-progress'
+    taskSvc.update.and.returnValue(of({ ...MOCK_TASKS[0], status: 'done' as const }));
+    component.onStatusToggle(new Event('change'), MOCK_TASKS[0]);
+    expect(taskSvc.update).toHaveBeenCalledWith('1', { status: 'done' });
+
+    // Now simulate unchecking the done task — should go to 'backlog', not 'in-progress'
+    const doneTask = { ...MOCK_TASKS[0], status: 'done' as const };
+    taskSvc.update.and.returnValue(of({ ...doneTask, status: 'backlog' as const }));
+    component.onStatusToggle(new Event('change'), doneTask);
+    expect(taskSvc.update).toHaveBeenCalledWith('1', { status: 'backlog' });
   });
 
   it('onStatusToggle ignores rapid double-click while request is in-flight', () => {
