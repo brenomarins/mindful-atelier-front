@@ -13,9 +13,9 @@ import { Mood } from '../../core/models/journal.model';
 import { TaskCardComponent } from '../../shared/components/task-card/task-card.component';
 
 export interface DayColumn {
-  date: string;       // "2026-03-25"
-  label: string;      // "Monday"
-  dayNumber: number;  // 25
+  date: string;
+  label: string;
+  dayNumber: number;
   isToday: boolean;
   tasks: Task[];
 }
@@ -35,12 +35,12 @@ export class ScheduleComponent implements OnInit {
   columns   = signal<DayColumn[]>([]);
   weekStart = signal<Date>(this.getMonday(new Date()));
 
-  // Daily Reflection (today's journal)
-  today = new Date().toISOString().slice(0, 10);
+  // Daily Reflection
+  today          = new Date().toISOString().slice(0, 10);
   reflectionText = signal('');
-  savedMood = signal<Mood | null>(null);
+  savedMood      = signal<Mood | null>(null);
+  showReflection = signal(localStorage.getItem('reflectionPanelOpen') !== 'false');
 
-  // Derived: list of droppable container IDs for CDK
   dropListIds = computed(() => this.columns().map(c => `drop-${c.date}`));
 
   ngOnInit(): void {
@@ -64,7 +64,7 @@ export class ScheduleComponent implements OnInit {
     ]).subscribe(([tasks, tags]) => {
       this.tags.set(tags);
       this.columns.set(days.map((d, i) => {
-        const dateStr = d.toISOString().slice(0, 10);
+        const dateStr  = d.toISOString().slice(0, 10);
         const todayStr = new Date().toISOString().slice(0, 10);
         return {
           date:      dateStr,
@@ -80,8 +80,14 @@ export class ScheduleComponent implements OnInit {
   loadTodayJournal(): void {
     this.journalSvc.getByDate(this.today).subscribe({
       next:  entry => this.reflectionText.set(entry.achievements ?? ''),
-      error: () => {},   // 404 = no entry yet, that's fine
+      error: () => {},
     });
+  }
+
+  toggleReflection(): void {
+    const next = !this.showReflection();
+    this.showReflection.set(next);
+    localStorage.setItem('reflectionPanelOpen', String(next));
   }
 
   drop(event: CdkDragDrop<Task[]>, targetDate: string): void {

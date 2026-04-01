@@ -16,6 +16,9 @@ describe('ScheduleComponent', () => {
   let journalSvc: jasmine.SpyObj<JournalService>;
 
   beforeEach(() => {
+    // Reset localStorage before each test so state doesn't bleed between tests
+    localStorage.removeItem('reflectionPanelOpen');
+
     taskSvc    = jasmine.createSpyObj('TaskService',    ['list', 'update']);
     tagSvc     = jasmine.createSpyObj('TagService',     ['list']);
     journalSvc = jasmine.createSpyObj('JournalService', ['getByDate', 'upsert']);
@@ -47,7 +50,7 @@ describe('ScheduleComponent', () => {
 
   it('getMonday returns a Monday', () => {
     const monday = (component as any).getMonday(new Date('2026-03-25'));
-    expect(monday.getDay()).toBe(1); // 1 = Monday
+    expect(monday.getDay()).toBe(1);
   });
 
   it('columns contain only tasks for that date', () => {
@@ -55,7 +58,26 @@ describe('ScheduleComponent', () => {
       scheduledDay: component.columns()[0].date, order: 0, tagIds: [], createdAt: '', updatedAt: '' };
     taskSvc.list.and.returnValue(of([task]));
     component.loadWeek();
-    // After reload, first column should have the task
     expect(component.columns()[0].tasks.length).toBe(1);
+  });
+
+  // ── Reflection toggle ──────────────────────────────────────────────────────
+
+  it('showReflection defaults to true when localStorage key is absent', () => {
+    expect(component.showReflection()).toBeTrue();
+  });
+
+  it('toggleReflection() flips showReflection signal', () => {
+    component.toggleReflection();
+    expect(component.showReflection()).toBeFalse();
+    component.toggleReflection();
+    expect(component.showReflection()).toBeTrue();
+  });
+
+  it('toggleReflection() persists state to localStorage', () => {
+    component.toggleReflection(); // false
+    expect(localStorage.getItem('reflectionPanelOpen')).toBe('false');
+    component.toggleReflection(); // true
+    expect(localStorage.getItem('reflectionPanelOpen')).toBe('true');
   });
 });

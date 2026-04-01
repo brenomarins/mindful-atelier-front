@@ -78,9 +78,11 @@
 </section>
 
 <!-- Daily Reflection Strip -->
-<section class="mt-auto bg-tertiary-fixed p-10 rounded-t-[3rem]">
-  <div class="max-w-4xl">
-    <div class="flex items-center gap-4 mb-6">
+<section class="mt-auto bg-tertiary-fixed rounded-t-[3rem] overflow-hidden">
+
+  <!-- Toggle header — always visible -->
+  <div class="flex items-center justify-between px-10 py-6">
+    <div class="flex items-center gap-4">
       <span class="material-symbols-outlined text-tertiary text-4xl" aria-hidden="true">edit_square</span>
       <div>
         <h3 class="text-tertiary font-headline font-extrabold text-2xl">Daily Reflection</h3>
@@ -89,26 +91,42 @@
         </p>
       </div>
     </div>
-
-    <textarea
-      class="w-full bg-transparent border-none focus:ring-0 text-3xl font-headline font-bold
-             text-tertiary placeholder-tertiary/30 resize-none h-32"
-      placeholder="Start typing your thoughts..."
-      [ngModel]="reflectionText()"
-      (ngModelChange)="reflectionText.set($event)"
-    ></textarea>
-
-    <div class="flex gap-4 mt-4">
-      <button
-        (click)="saveReflection()"
-        class="px-6 py-2 bg-tertiary text-on-tertiary rounded-full font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-all"
-      >
-        Save Entry
-      </button>
-      <a routerLink="/journal"
-         class="px-6 py-2 border border-tertiary/20 text-tertiary rounded-full font-bold text-xs uppercase tracking-widest hover:bg-tertiary/5 transition-all cursor-pointer">
-        View History
-      </a>
-    </div>
+    <button
+      (click)="toggleReflection()"
+      class="p-2 rounded-full hover:bg-black/10 transition-colors"
+      [attr.aria-label]="showReflection() ? 'Collapse reflection panel' : 'Expand reflection panel'"
+    >
+      <span
+        class="material-symbols-outlined text-tertiary transition-transform duration-200"
+        [class.rotate-180]="!showReflection()"
+      >expand_less</span>
+    </button>
   </div>
+
+  <!-- Collapsible body -->
+  @if (showReflection()) {
+    <div class="px-10 pb-10 max-w-4xl">
+      <textarea
+        class="w-full bg-transparent border-none focus:ring-0 text-3xl font-headline font-bold
+               text-tertiary placeholder-tertiary/30 resize-none h-32"
+        placeholder="Start typing your thoughts..."
+        [ngModel]="reflectionText()"
+        (ngModelChange)="reflectionText.set($event)"
+      ></textarea>
+
+      <div class="flex gap-4 mt-4">
+        <button
+          (click)="saveReflection()"
+          class="px-6 py-2 bg-tertiary text-on-tertiary rounded-full font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-all"
+        >
+          Save Entry
+        </button>
+        <a routerLink="/journal"
+           class="px-6 py-2 border border-tertiary/20 text-tertiary rounded-full font-bold text-xs uppercase tracking-widest hover:bg-tertiary/5 transition-all cursor-pointer">
+          View History
+        </a>
+      </div>
+    </div>
+  }
+
 </section>
