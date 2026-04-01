@@ -337,7 +337,7 @@ export class ReportsComponent {
     this.loadData(this.filter());
   }
 
-  loadData(filter: 'week' | 'all'): void {
+  private loadData(filter: 'week' | 'all'): void {
     this.loading.set(true);
     this.error.set(null);
     const { from, to } = getWeekRange();

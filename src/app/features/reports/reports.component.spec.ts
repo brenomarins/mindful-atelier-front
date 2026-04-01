@@ -102,6 +102,14 @@ describe('ReportsComponent', () => {
     expect(breakdown.find(b => b.tagName === 'Studio Work')).toBeDefined();
   });
   it('moodByDay returns 7 entries', () => { expect(component.moodByDay().length).toBe(7); });
+  it('moodByDay has correct label for Thursday (index 3)', () => {
+    const day = component.moodByDay()[3];
+    expect(day.label).toBe('Th');
+  });
+  it('moodByDay has correct label for Saturday (index 5)', () => {
+    const day = component.moodByDay()[5];
+    expect(day.label).toBe('Sa');
+  });
   it('sets error signal on load failure', fakeAsync(() => {
     statsSvc.getStats.and.returnValue(throwError(() => new Error('Network error')));
     component.retryLoad();
