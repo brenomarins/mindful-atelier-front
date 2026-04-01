@@ -2,12 +2,13 @@ import {
   Component, inject, signal, computed, effect, DestroyRef,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { StatsService } from '../../core/services/stats.service';
 import { TaskService } from '../../core/services/task.service';
 import { TagService } from '../../core/services/tag.service';
 import { JournalService } from '../../core/services/journal.service';
-import { StatsResponse, TrendPointDto, TaskStatPointDto } from '../../core/models/stats.model';
+import { StatsResponse, TaskStatPointDto } from '../../core/models/stats.model';
 import { Task } from '../../core/models/task.model';
 import { Tag } from '../../core/models/tag.model';
 import { JournalEntry, Mood } from '../../core/models/journal.model';
@@ -202,29 +203,6 @@ function buildMoodByDay(entries: JournalEntry[]): MoodPoint[] {
           </div>
         </div>
 
-        <!-- Row 3: Momentum Streak (col-span-4) -->
-        <div class="col-span-12 lg:col-span-4 bg-surface-container-low rounded-xl p-8 flex flex-col">
-          <div class="flex items-center gap-4 mb-6">
-            <div class="w-12 h-12 rounded-full bg-secondary-fixed text-secondary flex items-center justify-center flex-shrink-0">
-              <span class="material-symbols-outlined">bolt</span>
-            </div>
-            <div>
-              <h4 class="font-headline font-bold text-lg text-on-surface">Momentum Streak</h4>
-              <p class="text-xs text-on-surface-variant font-body">Consistent performance</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-1 justify-between px-2">
-            @for (day of weeklyTrend(); track $index) {
-              <div
-                class="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold transition-all"
-                [class]="day.hours > 0 ? 'bg-secondary text-white' : 'bg-surface-variant text-on-surface-variant'"
-              >
-                {{ ['M','T','W','Th','F','Sa','Su'][$index] }}
-              </div>
-            }
-          </div>
-        </div>
-
         <!-- Row 3: Creative Velocity (col-span-8) -->
         <div class="col-span-12 lg:col-span-8 bg-surface-container-lowest rounded-xl p-8 flex flex-col md:flex-row gap-8 items-center border border-outline-variant/10">
           <div class="flex-1">
@@ -278,6 +256,7 @@ export class ReportsComponent {
   private tagSvc     = inject(TagService);
   private journalSvc = inject(JournalService);
   private destroyRef = inject(DestroyRef);
+  private loadTrigger$ = new Subject<'week' | 'all'>();
 
   // ── Filter ─────────────────────────────────────────────────────────────────
   filter      = signal<'week' | 'all'>('week');
@@ -323,31 +302,18 @@ export class ReportsComponent {
   );
 
   constructor() {
-    effect(() => {
-      this.loadData(this.filter());
-    });
-  }
-
-  setFilter(label: FilterLabel, apiFilter: 'week' | 'all'): void {
-    this.filterLabel.set(label);
-    this.filter.set(apiFilter);
-  }
-
-  retryLoad(): void {
-    this.loadData(this.filter());
-  }
-
-  private loadData(filter: 'week' | 'all'): void {
-    this.loading.set(true);
-    this.error.set(null);
-    const { from, to } = getWeekRange();
-
-    forkJoin([
-      this.statsSvc.getStats(filter),
-      this.taskSvc.list(),
-      this.tagSvc.list(),
-      this.journalSvc.list(from, to),
-    ]).pipe(
+    this.loadTrigger$.pipe(
+      switchMap(filter => {
+        this.loading.set(true);
+        this.error.set(null);
+        const { from, to } = getWeekRange();
+        return forkJoin([
+          this.statsSvc.getStats(filter),
+          this.taskSvc.list(),
+          this.tagSvc.list(),
+          this.journalSvc.list(from, to),
+        ]);
+      }),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe({
       next: ([stats, tasks, tags, moodEntries]) => {
@@ -362,5 +328,18 @@ export class ReportsComponent {
         this.loading.set(false);
       },
     });
+
+    effect(() => {
+      this.loadTrigger$.next(this.filter());
+    });
+  }
+
+  setFilter(label: FilterLabel, apiFilter: 'week' | 'all'): void {
+    this.filterLabel.set(label);
+    this.filter.set(apiFilter);
+  }
+
+  retryLoad(): void {
+    this.loadTrigger$.next(this.filter());
   }
 }
