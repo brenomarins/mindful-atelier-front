@@ -137,4 +137,29 @@ describe('BacklogComponent', () => {
   it('weekDays computed returns 7 days starting from Monday', () => {
     expect(component.weekDays().length).toBe(7);
   });
+
+  it('onStatusToggle marks a non-done task as done (optimistic)', () => {
+    taskSvc.update.and.returnValue(of({
+      ...MOCK_TASKS[0], status: 'done' as const,
+    }));
+    component.onStatusToggle(new MouseEvent('click'), MOCK_TASKS[0]);
+    expect(taskSvc.update).toHaveBeenCalledWith('1', { status: 'done' });
+    expect(component.tasks().find(t => t.id === '1')!.status).toBe('done');
+  });
+
+  it('onStatusToggle marks a done task as backlog', () => {
+    taskSvc.update.and.returnValue(of({
+      ...MOCK_TASKS[2], status: 'backlog' as const,
+    }));
+    component.onStatusToggle(new MouseEvent('click'), MOCK_TASKS[2]);
+    expect(taskSvc.update).toHaveBeenCalledWith('3', { status: 'backlog' });
+    expect(component.tasks().find(t => t.id === '3')!.status).toBe('backlog');
+  });
+
+  it('onStatusToggle reverts optimistic update on API error', () => {
+    taskSvc.update.and.returnValue(throwError(() => ({ status: 500 })));
+    component.onStatusToggle(new MouseEvent('click'), MOCK_TASKS[0]);
+    // After error: status should revert to original 'in-progress'
+    expect(component.tasks().find(t => t.id === '1')!.status).toBe('in-progress');
+  });
 });

@@ -142,13 +142,15 @@
               <td class="px-4 py-4 w-8">
                 <span
                   *ngIf="task.status !== 'done'"
-                  class="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-[20px]"
+                  class="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-[20px] cursor-pointer hover:opacity-60"
                   cdkDragHandle
+                  (click)="onStatusToggle($event, task)"
                 >drag_indicator</span>
                 <span
                   *ngIf="task.status === 'done'"
-                  class="material-symbols-outlined text-outline text-[20px]"
+                  class="material-symbols-outlined text-outline text-[20px] cursor-pointer hover:opacity-60 transition-opacity"
                   style="font-variation-settings: 'FILL' 1"
+                  (click)="onStatusToggle($event, task)"
                 >check_circle</span>
               </td>
 

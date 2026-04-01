@@ -148,6 +148,19 @@ export class BacklogComponent implements OnInit {
     this.router.navigate(['/tasks/new']);
   }
 
+  onStatusToggle(event: Event, task: Task): void {
+    event.stopPropagation();
+    const newStatus: TaskStatus = task.status === 'done' ? 'backlog' : 'done';
+    this.tasks.update(list =>
+      list.map(t => t.id === task.id ? { ...t, status: newStatus } : t)
+    );
+    this.taskSvc.update(task.id, { status: newStatus }).subscribe({
+      error: () => this.tasks.update(list =>
+        list.map(t => t.id === task.id ? { ...t, status: task.status } : t)
+      ),
+    });
+  }
+
   onTableDrop(event: CdkDragDrop<Task[]>): void {
     if (event.previousContainer === event.container) {
       const updated = [...this.tasks()];
