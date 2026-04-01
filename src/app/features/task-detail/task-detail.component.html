@@ -86,11 +86,28 @@
             <span class="text-outline">Est. Time:</span>
             <span class="font-bold">—</span>
           </div>
-          <div class="flex justify-between items-center text-xs">
+          <div class="flex justify-between items-center text-xs group">
             <span class="text-outline">Deadline:</span>
-            <span class="font-bold" [ngClass]="dueDateClass(t.dueDate)">
-              {{ formatDate(t.dueDate) }}
-            </span>
+            @if (editingDeadline()) {
+              <input
+                type="date"
+                class="text-xs font-bold border-b border-outline bg-transparent focus:outline-none"
+                [value]="t.dueDate ?? ''"
+                (change)="saveDeadline($any($event.target).value)"
+                (keydown.escape)="cancelEditDeadline()"
+                (blur)="cancelEditDeadline()"
+                autofocus
+              />
+            } @else {
+              <button
+                class="flex items-center gap-1 font-bold group-hover:opacity-80 transition-opacity"
+                [ngClass]="dueDateClass(t.dueDate)"
+                (click)="startEditDeadline()"
+              >
+                {{ formatDate(t.dueDate) }}
+                <span class="material-symbols-outlined text-[12px] opacity-0 group-hover:opacity-60 transition-opacity">edit</span>
+              </button>
+            }
           </div>
         </div>
       </div>

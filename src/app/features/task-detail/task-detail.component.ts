@@ -25,11 +25,12 @@ export class TaskDetailComponent implements OnInit {
   private sessionSvc = inject(SessionService);
   readonly location  = inject(Location);
 
-  task        = signal<Task | null>(null);
-  tags        = signal<Tag[]>([]);
-  openSession = signal<Session | null>(null);
-  taskId      = signal<string>('');
-  today       = new Date();
+  task            = signal<Task | null>(null);
+  tags            = signal<Tag[]>([]);
+  openSession     = signal<Session | null>(null);
+  taskId          = signal<string>('');
+  editingDeadline = signal(false);
+  today           = new Date();
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id')!;
@@ -44,9 +45,7 @@ export class TaskDetailComponent implements OnInit {
         this.tags.set(tags);
         this.openSession.set(openSession);
       },
-      error: () => {
-        // Silent fail: loading state remains, no toast in v1
-      },
+      error: () => {},
     });
   }
 
@@ -68,5 +67,24 @@ export class TaskDetailComponent implements OnInit {
   formatDate(date: string | null | undefined): string {
     if (!date) return '—';
     return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  startEditDeadline(): void {
+    this.editingDeadline.set(true);
+  }
+
+  saveDeadline(value: string): void {
+    const newDate  = value || null;
+    const previous = this.task();
+    this.editingDeadline.set(false);
+    if (newDate === (previous?.dueDate ?? null)) return;
+    this.taskSvc.update(this.taskId(), { dueDate: newDate }).subscribe({
+      next:  updated => this.task.set(updated),
+      error: ()      => this.task.set(previous),
+    });
+  }
+
+  cancelEditDeadline(): void {
+    this.editingDeadline.set(false);
   }
 }

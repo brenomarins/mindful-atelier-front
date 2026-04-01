@@ -3,7 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { TaskDetailComponent } from './task-detail.component';
 import { TaskService } from '../../core/services/task.service';
 import { TagService } from '../../core/services/tag.service';
@@ -25,7 +25,7 @@ describe('TaskDetailComponent', () => {
   };
 
   beforeEach(() => {
-    taskSvc    = jasmine.createSpyObj('TaskService',   ['get', 'list']);
+    taskSvc    = jasmine.createSpyObj('TaskService',   ['get', 'list', 'update']);
     tagSvc     = jasmine.createSpyObj('TagService',    ['list']);
     sessionSvc = jasmine.createSpyObj('SessionService', ['getOpen', 'listByTask']);
     depSvc     = jasmine.createSpyObj('DependencyService', ['getForTask', 'create', 'delete']);
@@ -33,6 +33,7 @@ describe('TaskDetailComponent', () => {
     taskSvc.get.and.returnValue(of(mockTask));
     tagSvc.list.and.returnValue(of([]));
     taskSvc.list.and.returnValue(of([]));
+    taskSvc.update.and.returnValue(of({ ...mockTask, dueDate: '2026-04-10' }));
     sessionSvc.getOpen.and.returnValue(of(null));
     sessionSvc.listByTask.and.returnValue(of([]));
     depSvc.getForTask.and.returnValue(of({ taskId: 'task-1', prerequisites: [], dependents: [] }));
@@ -74,5 +75,49 @@ describe('TaskDetailComponent', () => {
 
   it('dueDateClass returns text-primary for future date', () => {
     expect(component.dueDateClass('2099-12-31')).toBe('text-primary');
+  });
+
+  // ── Deadline edit ──────────────────────────────────────────────────────────
+
+  it('editingDeadline starts false', () => {
+    expect(component.editingDeadline()).toBeFalse();
+  });
+
+  it('startEditDeadline() sets editingDeadline to true', () => {
+    component.startEditDeadline();
+    expect(component.editingDeadline()).toBeTrue();
+  });
+
+  it('cancelEditDeadline() sets editingDeadline to false', () => {
+    component.startEditDeadline();
+    component.cancelEditDeadline();
+    expect(component.editingDeadline()).toBeFalse();
+  });
+
+  it('saveDeadline() calls taskSvc.update with new date', () => {
+    component.saveDeadline('2026-04-10');
+    expect(taskSvc.update).toHaveBeenCalledWith('task-1', { dueDate: '2026-04-10' });
+  });
+
+  it('saveDeadline() updates task signal on success', () => {
+    component.saveDeadline('2026-04-10');
+    expect(component.task()?.dueDate).toBe('2026-04-10');
+  });
+
+  it('saveDeadline() with empty string sets dueDate to null', () => {
+    component.saveDeadline('');
+    expect(taskSvc.update).toHaveBeenCalledWith('task-1', { dueDate: null });
+  });
+
+  it('saveDeadline() reverts task on API error', () => {
+    taskSvc.update.and.returnValue(throwError(() => new Error('fail')));
+    component.saveDeadline('2026-04-10');
+    expect(component.task()).toEqual(mockTask);
+  });
+
+  it('saveDeadline() does not call update when value unchanged', () => {
+    taskSvc.update.calls.reset();
+    component.saveDeadline(mockTask.dueDate!);
+    expect(taskSvc.update).not.toHaveBeenCalled();
   });
 });
