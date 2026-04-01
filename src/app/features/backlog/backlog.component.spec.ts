@@ -184,4 +184,19 @@ describe('BacklogComponent', () => {
     // Only one update call should have been made
     expect(taskSvc.update).toHaveBeenCalledTimes(1);
   });
+
+  it('renders a checkbox for each task row', () => {
+    fixture.detectChanges();
+    const checkboxes = fixture.nativeElement.querySelectorAll('input[type="checkbox"]');
+    expect(checkboxes.length).toBe(3); // one per MOCK_TASKS row
+  });
+
+  it('checkbox is checked for done tasks and unchecked for non-done tasks', () => {
+    fixture.detectChanges();
+    const checkboxes = fixture.nativeElement.querySelectorAll('input[type="checkbox"]');
+    // MOCK_TASKS order: [0] in-progress, [1] backlog, [2] done
+    expect(checkboxes[0].checked).toBeFalse();
+    expect(checkboxes[1].checked).toBeFalse();
+    expect(checkboxes[2].checked).toBeTrue();
+  });
 });

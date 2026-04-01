@@ -117,6 +117,7 @@
         >
           <thead>
             <tr class="text-on-surface-variant/60 uppercase text-[10px] tracking-widest font-bold font-body">
+              <th class="px-4 py-4 w-8"></th>
               <th class="px-6 py-4 w-8"></th>
               <th class="px-6 py-4">Name</th>
               <th class="px-6 py-4">Tag</th>
@@ -140,6 +141,16 @@
               (cdkDragStarted)="onDragStarted(task)"
               (cdkDragEnded)="onDragEnded()"
             >
+              <!-- Checkbox -->
+              <td class="px-4 py-4 w-8">
+                <input
+                  type="checkbox"
+                  [checked]="task.status === 'done'"
+                  (click)="$event.stopPropagation()"
+                  (change)="onStatusToggle($event, task)"
+                  class="w-4 h-4 cursor-pointer accent-primary"
+                />
+              </td>
               <!-- Drag handle / status icon -->
               <td class="px-4 py-4 w-8">
                 <span
