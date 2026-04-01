@@ -42,4 +42,36 @@ describe('TaskCardComponent', () => {
     component.toggleStatus(); // backlog → in-progress
     expect(spy).toHaveBeenCalledWith('in-progress');
   });
+
+  it('renders a checkbox instead of a button', () => {
+    expect(fixture.nativeElement.querySelector('input[type="checkbox"]')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('button')).toBeNull();
+  });
+
+  it('checkbox is checked when task is done', () => {
+    component.task = { ...mockTask, status: 'done' };
+    fixture.detectChanges();
+    const cb = fixture.nativeElement.querySelector('input[type="checkbox"]') as HTMLInputElement;
+    expect(cb.checked).toBeTrue();
+  });
+
+  it('checkbox emits done when checked and backlog when unchecked', () => {
+    const spy = spyOn(component.statusChange, 'emit');
+
+    // Simulate checking (task is backlog → user checks → should emit 'done')
+    const cb = fixture.nativeElement.querySelector('input[type="checkbox"]') as HTMLInputElement;
+    cb.checked = true;
+    cb.dispatchEvent(new Event('change'));
+    expect(spy).toHaveBeenCalledWith('done');
+
+    spy.calls.reset();
+
+    // Simulate unchecking (task is done → user unchecks → should emit 'backlog')
+    component.task = { ...mockTask, status: 'done' };
+    fixture.detectChanges();
+    const cb2 = fixture.nativeElement.querySelector('input[type="checkbox"]') as HTMLInputElement;
+    cb2.checked = false;
+    cb2.dispatchEvent(new Event('change'));
+    expect(spy).toHaveBeenCalledWith('backlog');
+  });
 });

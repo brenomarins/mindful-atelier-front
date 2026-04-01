@@ -17,21 +17,15 @@
       <span></span>
     }
 
-    <!-- Status icon -->
-    <button
-      (click)="$event.stopPropagation(); toggleStatus()"
-      class="focus:outline-none"
-      [title]="'Toggle status: ' + task.status"
-    >
-      <span
-        class="material-symbols-outlined text-sm"
-        aria-hidden="true"
-        [class.text-secondary]="isInProgress"
-        [class.text-primary]="isDone"
-        [class.text-outline]="!isDone && !isInProgress"
-        [style.font-variation-settings]="isDone ? '\'FILL\' 1' : '\'FILL\' 0'"
-      >{{ statusIcon }}</span>
-    </button>
+    <!-- Status checkbox -->
+    <input
+      type="checkbox"
+      [checked]="isDone"
+      [attr.aria-label]="isDone ? 'Mark as incomplete' : 'Mark as complete'"
+      (click)="$event.stopPropagation()"
+      (change)="statusChange.emit($any($event.target).checked ? 'done' : 'backlog')"
+      class="w-4 h-4 cursor-pointer accent-primary mt-0.5"
+    />
   </div>
 
   <h4
