@@ -26,7 +26,8 @@ export class SubtaskListComponent implements OnInit {
 
   ngOnInit(): void {
     this.taskSvc.list({ parentId: this.taskId }).subscribe(tasks => {
-      this.subtasks.set([...tasks].sort((a, b) => a.order - b.order));
+      const subtasks = tasks.filter(t => t.parentId === this.taskId);
+      this.subtasks.set([...subtasks].sort((a, b) => a.order - b.order));
     });
   }
 
