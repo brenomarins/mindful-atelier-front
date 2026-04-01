@@ -11,6 +11,7 @@ import { Task } from '../../core/models/task.model';
 import { Tag } from '../../core/models/tag.model';
 import { Mood } from '../../core/models/journal.model';
 import { TaskCardComponent } from '../../shared/components/task-card/task-card.component';
+import { Router } from '@angular/router';
 
 export interface DayColumn {
   date: string;
@@ -30,6 +31,7 @@ export class ScheduleComponent implements OnInit {
   private taskSvc    = inject(TaskService);
   private tagSvc     = inject(TagService);
   private journalSvc = inject(JournalService);
+  private router   = inject(Router);
 
   tags      = signal<Tag[]>([]);
   columns   = signal<DayColumn[]>([]);
@@ -46,6 +48,10 @@ export class ScheduleComponent implements OnInit {
   ngOnInit(): void {
     this.loadWeek();
     this.loadTodayJournal();
+  }
+
+  onAddTask(): void {
+    this.router.navigate(['/tasks/new']);
   }
 
   loadWeek(): void {
