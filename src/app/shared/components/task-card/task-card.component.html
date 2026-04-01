@@ -1,0 +1,43 @@
+<div
+  class="p-4 rounded-xl cursor-pointer {{ cardClasses }} {{ leftBorder }}"
+  [routerLink]="['/tasks', task.id]"
+  (click)="cardClick.emit(task)"
+>
+  <div class="flex justify-between items-start mb-2">
+    <!-- Tag chip -->
+    @if (taskTags.length > 0) {
+      <span
+        class="text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-tighter"
+        [style.background-color]="taskTags[0].color + '33'"
+        [style.color]="taskTags[0].color"
+      >
+        {{ taskTags[0].name }}
+      </span>
+    } @else {
+      <span></span>
+    }
+
+    <!-- Status checkbox -->
+    <input
+      type="checkbox"
+      [checked]="isDone"
+      [attr.aria-label]="'Mark ' + task.title + (isDone ? ' as incomplete' : ' as complete')"
+      (click)="$event.stopPropagation()"
+      (change)="statusChange.emit($any($event.target).checked ? 'done' : 'backlog')"
+      class="w-4 h-4 cursor-pointer accent-primary mt-0.5"
+    />
+  </div>
+
+  <h4
+    class="font-body font-bold text-sm leading-snug"
+    [class.line-through]="isDone"
+    [class.text-outline]="isDone"
+    [class.text-on-surface]="!isDone"
+  >
+    {{ task.title }}
+  </h4>
+
+  @if (task.dueDate && !isDone) {
+    <p class="text-outline text-[11px] mt-1">Due {{ task.dueDate }}</p>
+  }
+</div>

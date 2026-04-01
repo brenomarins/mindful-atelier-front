@@ -1,0 +1,81 @@
+<!-- Timer Card -->
+<section class="bg-primary-container text-on-primary-container p-8 rounded-xl shadow-sm relative overflow-hidden">
+  <div class="relative z-10 flex flex-col items-center">
+    <span class="text-xs font-bold tracking-[0.2em] opacity-80 mb-6 uppercase">
+      @if (sessionType() === 'work') { Focus Session }
+      @else if (sessionType() === 'short_break') { Short Break }
+      @else { Long Break }
+    </span>
+
+    @if (otherTaskRunning()) {
+      <p class="text-sm opacity-70 text-center mb-8">A session is running for another task.</p>
+    } @else if (sessionComplete()) {
+      <p class="text-2xl font-headline font-bold mb-8 opacity-80">Session complete!</p>
+    } @else {
+      <div class="text-7xl font-headline font-extrabold mb-8 tabular-nums tracking-tighter">
+        {{ displayTime }}
+      </div>
+    }
+
+    <div class="flex gap-4 w-full">
+      @if (isRunning()) {
+        <button (click)="pause()"
+                class="flex-1 bg-on-primary-container text-primary-container py-3 rounded-full font-bold transition-transform active:scale-95">
+          Pause
+        </button>
+      } @else {
+        <button (click)="start()"
+                [disabled]="otherTaskRunning()"
+                class="flex-1 bg-on-primary-container text-primary-container py-3 rounded-full font-bold transition-transform active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
+          @if (sessionComplete()) { Start New }
+          @else if (timeRemaining() < presetDuration) { Resume }
+          @else { Start }
+        </button>
+      }
+      <button (click)="reset()"
+              class="w-14 h-14 bg-surface-container-lowest/20 backdrop-blur-md rounded-full flex items-center justify-center transition-transform active:scale-95">
+        <span class="material-symbols-outlined">refresh</span>
+      </button>
+    </div>
+
+    <div class="mt-10 flex gap-4 text-xs font-medium opacity-70">
+      <button (click)="switchPreset('work')"
+              class="hover:opacity-100 underline-offset-4"
+              [class.underline]="sessionType() === 'work'"
+              [class.opacity-100]="sessionType() === 'work'">
+        Pomodoro
+      </button>
+      <button (click)="switchPreset('short_break')"
+              class="hover:opacity-100 underline-offset-4"
+              [class.underline]="sessionType() === 'short_break'"
+              [class.opacity-100]="sessionType() === 'short_break'">
+        Short Break
+      </button>
+      <button (click)="switchPreset('long_break')"
+              class="hover:opacity-100 underline-offset-4"
+              [class.underline]="sessionType() === 'long_break'"
+              [class.opacity-100]="sessionType() === 'long_break'">
+        Long Break
+      </button>
+    </div>
+  </div>
+  <!-- Decorative blur blob -->
+  <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-on-primary-container/10 rounded-full blur-3xl"></div>
+</section>
+
+<!-- Stats Card -->
+<section class="bg-surface-container-low p-6 rounded-xl space-y-4 mt-6">
+  <div class="flex items-center justify-between">
+    <h3 class="font-headline font-bold text-sm">Task Progress</h3>
+  </div>
+  <div class="grid grid-cols-2 gap-4">
+    <div class="bg-surface-container-lowest p-4 rounded-lg">
+      <div class="text-primary font-black text-2xl mb-1">{{ totalMinutes() }}m</div>
+      <div class="text-[10px] text-outline uppercase font-bold tracking-wider">Total Time</div>
+    </div>
+    <div class="bg-surface-container-lowest p-4 rounded-lg">
+      <div class="text-primary font-black text-2xl mb-1">{{ pomodoroCount() }}</div>
+      <div class="text-[10px] text-outline uppercase font-bold tracking-wider">Pomodoros</div>
+    </div>
+  </div>
+</section>

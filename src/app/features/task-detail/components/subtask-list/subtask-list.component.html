@@ -1,0 +1,78 @@
+<section class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h3 class="font-headline font-bold text-xl">Subtasks</h3>
+      <div class="text-sm text-outline mt-1">
+        {{ completedCount() }} of {{ subtasks().length }} completed
+      </div>
+    </div>
+    <button title="Coming soon" disabled
+            class="flex items-center gap-2 px-4 py-2 bg-tertiary-fixed text-on-tertiary-fixed rounded-full text-xs font-bold opacity-50 cursor-not-allowed">
+      <span class="material-symbols-outlined text-sm">bolt</span>
+      AI Break Down
+    </button>
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="w-full h-1 bg-surface-container-low rounded-full mb-8 overflow-hidden">
+    <div class="h-full bg-primary rounded-full transition-all duration-300"
+         [style.width.%]="progress() * 100"></div>
+  </div>
+
+  <!-- Subtask List -->
+  <div cdkDropList (cdkDropListDropped)="drop($event)" class="space-y-3">
+    @for (task of subtasks(); track task.id) {
+      <div cdkDrag
+           class="flex items-center gap-4 p-4 rounded-lg transition-colors cursor-pointer group"
+           [class.border-l-4]="task.status === 'in-progress'"
+           [class.border-secondary]="task.status === 'in-progress'"
+           [class.bg-surface-container-lowest]="task.status !== 'done'"
+           [class.bg-surface-container-low]="task.status === 'done'">
+        <input type="checkbox"
+               [checked]="task.status === 'done'"
+               (change)="toggle(task)"
+               class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary flex-shrink-0" />
+        <span class="flex-1 text-on-surface text-sm"
+              [class.line-through]="task.status === 'done'"
+              [class.opacity-60]="task.status === 'done'">
+          {{ task.title }}
+        </span>
+        <button (click)="delete(task)"
+                class="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:text-error rounded">
+          <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+        <span cdkDragHandle
+              class="material-symbols-outlined text-outline opacity-0 group-hover:opacity-100 transition-opacity cursor-grab select-none">
+          drag_indicator
+        </span>
+      </div>
+    }
+  </div>
+
+  <!-- Add Subtask -->
+  @if (showAddInput) {
+    <div class="mt-4 flex items-center gap-2">
+      <input type="text"
+             [(ngModel)]="newTitle"
+             placeholder="Subtask title…"
+             (keydown.enter)="add()"
+             (keydown.escape)="showAddInput = false"
+             autofocus
+             class="flex-1 bg-surface-container-low rounded-lg px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50" />
+      <button (click)="add()"
+              class="px-4 py-2 bg-primary text-on-primary rounded-full text-xs font-bold hover:opacity-90">
+        Add
+      </button>
+      <button (click)="showAddInput = false" class="px-3 py-2 text-outline text-xs">
+        Cancel
+      </button>
+    </div>
+  } @else {
+    <button (click)="showAddInput = true"
+            class="w-full mt-4 flex items-center justify-center gap-2 p-3 text-outline hover:text-on-surface border-2 border-dashed border-outline-variant/30 rounded-lg text-sm font-medium transition-colors">
+      <span class="material-symbols-outlined text-sm">add</span>
+      Add Subtask
+    </button>
+  }
+</section>

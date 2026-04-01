@@ -1,0 +1,154 @@
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Location } from '@angular/common';
+import { Router } from '@angular/router';
+import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { catchError, concatMap, EMPTY, from, toArray } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { TaskService } from '../../core/services/task.service';
+import { TagService } from '../../core/services/tag.service';
+import { CreateTaskRequest } from '../../core/models/task.model';
+import { Tag } from '../../core/models/tag.model';
+
+export interface SubtaskDraft {
+  title: string;
+}
+
+@Component({
+  selector: 'app-create-task',
+  standalone: true,
+  imports: [FormsModule, DragDropModule],
+  templateUrl: './create-task.component.html',
+})
+export class CreateTaskComponent implements OnInit {
+  private taskSvc    = inject(TaskService);
+  private tagSvc     = inject(TagService);
+  private router     = inject(Router);
+  private location   = inject(Location);
+  private destroyRef = inject(DestroyRef);
+
+  // ── Form state ──────────────────────────────────────────────────────────────
+  title          = signal('');
+  description    = signal('');
+  scheduledDay   = signal<string | null>(null);
+  dueDate        = signal<string | null>(null);
+  selectedTagIds = signal<string[]>([]);
+  subtasks       = signal<SubtaskDraft[]>([]);
+
+  // ── Data ────────────────────────────────────────────────────────────────────
+  tags = signal<Tag[]>([]);
+
+  // ── UI state ────────────────────────────────────────────────────────────────
+  saving   = signal(false);
+  error    = signal<string | null>(null);
+  tagError = signal<string | null>(null);
+
+  // ── Inline tag creation ─────────────────────────────────────────────────────
+  newTagName  = signal('');
+  newTagColor = signal('#6366f1');
+  showTagForm = signal(false);
+
+  readonly PRESET_COLORS = [
+    '#00452e', '#284cdb', '#593300', '#b91c1c',
+    '#0369a1', '#7c3aed', '#0f766e', '#a16207',
+  ];
+
+  // ── Computed ────────────────────────────────────────────────────────────────
+  canSave = computed(() => this.title().trim().length > 0 && !this.saving());
+
+  // ── Lifecycle ───────────────────────────────────────────────────────────────
+  ngOnInit(): void {
+    this.tagSvc.list()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(tags => this.tags.set(tags));
+  }
+
+  // ── Subtask management (stubs) ───────────────────────────────────────────────
+  addSubtask(): void {
+    // TODO: auto-focus — @ViewChildren('subtaskInput') inputs: QueryList<ElementRef> — focus last after update
+    this.subtasks.update(list => [...list, { title: '' }]);
+  }
+
+  updateSubtask(index: number, title: string): void {
+    this.subtasks.update(list =>
+      list.map((s, i) => i === index ? { title } : s),
+    );
+  }
+
+  removeSubtask(index: number): void {
+    this.subtasks.update(list => list.filter((_, i) => i !== index));
+  }
+
+  onSubtaskDrop(event: CdkDragDrop<SubtaskDraft[]>): void {
+    const updated = [...this.subtasks()];
+    moveItemInArray(updated, event.previousIndex, event.currentIndex);
+    this.subtasks.set(updated);
+  }
+
+  // ── Tag picker (stubs) ──────────────────────────────────────────────────────
+  toggleTag(id: string): void {
+    this.selectedTagIds.update(ids =>
+      ids.includes(id) ? ids.filter(i => i !== id) : [...ids, id],
+    );
+  }
+  createTag(): void {
+    this.tagSvc.create({ name: this.newTagName().trim(), color: this.newTagColor() })
+      .subscribe({
+        next: tag => {
+          this.tags.update(ts => [...ts, tag]);
+          this.selectedTagIds.update(ids => [...ids, tag.id]);
+          this.newTagName.set('');
+          this.tagError.set(null);
+          this.showTagForm.set(false);
+        },
+        error: () => this.tagError.set('Could not create tag. Try again.'),
+      });
+  }
+
+  // ── Save / navigation ───────────────────────────────────────────────────────
+  save(): void {
+    if (!this.title().trim()) {
+      this.error.set('Task title is required.');
+      return;
+    }
+    this.saving.set(true);
+    this.error.set(null);
+
+    const req: CreateTaskRequest = { title: this.title().trim(), status: 'backlog' };
+    if (this.description().trim())     req.description  = this.description().trim();
+    if (this.scheduledDay())           req.scheduledDay = this.scheduledDay()!;
+    if (this.dueDate())                req.dueDate      = this.dueDate()!;
+    if (this.selectedTagIds().length)  req.tagIds       = this.selectedTagIds();
+
+    this.taskSvc.create(req).subscribe({
+      next: task => {
+        // toArray() is required: if there are no subtasks, from([]) calls complete
+        // without emitting — toArray() converts complete into next([]), guaranteeing navigation.
+        from(this.subtasks().filter(s => s.title.trim())).pipe(
+          concatMap((s, i) =>
+            this.taskSvc.create({
+              title:    s.title.trim(),
+              parentId: task.id,
+              status:   'backlog',
+              order:    i,
+            }).pipe(catchError(() => EMPTY)),
+          ),
+          toArray(),
+        ).subscribe({
+          next: () => {
+            this.saving.set(false);
+            this.router.navigate(['/tasks', task.id]);
+          },
+        });
+      },
+      error: () => {
+        this.error.set('Failed to create task. Please try again.');
+        this.saving.set(false);
+      },
+    });
+  }
+
+  discard(): void {
+    this.location.back();
+  }
+}
