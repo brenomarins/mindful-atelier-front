@@ -145,6 +145,7 @@
               <td class="px-4 py-4 w-8">
                 <input
                   type="checkbox"
+                  [attr.aria-label]="'Mark ' + task.title + (task.status === 'done' ? ' as incomplete' : ' as complete')"
                   [checked]="task.status === 'done'"
                   (click)="$event.stopPropagation()"
                   (change)="onStatusToggle($event, task)"
