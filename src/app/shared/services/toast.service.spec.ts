@@ -42,7 +42,9 @@ describe('ToastService', () => {
   it('auto-dismisses after the given duration', fakeAsync(() => {
     svc.show('Auto', 'neutral', 1000);
     expect(svc.toasts().length).toBe(1);
-    tick(1000);
+    tick(999);
+    expect(svc.toasts().length).toBe(1); // not yet dismissed
+    tick(1);
     expect(svc.toasts().length).toBe(0);
   }));
 
@@ -59,7 +61,7 @@ describe('ToastService', () => {
     svc.show('Slow', 'neutral', 2000);
     tick(500);
     expect(svc.toasts().length).toBe(1);
-    expect(svc.toasts()[0].message).toBe('Slow');
+    expect(svc.toasts().some(t => t.message === 'Slow')).toBeTrue();
     tick(1500);
     expect(svc.toasts().length).toBe(0);
   }));
