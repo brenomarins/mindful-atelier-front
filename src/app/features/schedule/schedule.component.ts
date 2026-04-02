@@ -20,6 +20,7 @@ import { Mood } from '../../core/models/journal.model';
 import { TaskCardComponent } from '../../shared/components/task-card/task-card.component';
 import { Router } from '@angular/router';
 import { ToastService } from '../../shared/services/toast.service';
+import { toLocalISO } from '../../core/utils/date.utils';
 
 export interface DayColumn {
   date: string;
@@ -74,7 +75,7 @@ export class ScheduleComponent implements OnInit {
   weekStart = signal<Date>(this.getMonday(new Date()));
 
   // Daily Reflection
-  today = this.toLocalISO(new Date());
+  today = toLocalISO(new Date());
   reflectionText = signal('');
   savedMood = signal<Mood | null>(null);
   showReflection = signal(localStorage.getItem('reflectionPanelOpen') !== 'false');
@@ -110,8 +111,8 @@ export class ScheduleComponent implements OnInit {
       next: ([tasks, tags]) => {
         this.tags.set(tags);
         this.columns.set(days.map((d, i) => {
-          const dateStr = this.toLocalISO(d);
-          const todayStr = this.toLocalISO(new Date());
+          const dateStr = toLocalISO(d);
+          const todayStr = toLocalISO(new Date());
           const dayTasks = tasks.filter(t => t.scheduledDay === dateStr);
           return {
             date: dateStr,
@@ -253,11 +254,6 @@ export class ScheduleComponent implements OnInit {
   get weekLabel(): string {
     const start = this.weekStart();
     return start.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  }
-
-  private toLocalISO(d: Date): string {
-    const pad = (value: number) => String(value).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   }
 
   private withColumnMeta(columns: DayColumn[]): DayColumn[] {
