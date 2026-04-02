@@ -105,27 +105,10 @@
 
             @if (col.tasks.length === 0) {
               @let emptyState = getEmptyStateContext(col.date, col.hadTasks, col.allDone);
-              <div
-                class="flex flex-col items-center justify-center rounded-xl px-4 py-8 text-center"
-                [class.bg-gradient-to-br]="emptyState.isCelebration"
-                [class.from-primary]="emptyState.isCelebration"
-                [class.to-primary-container]="emptyState.isCelebration"
-                [class.text-primary-fixed-dim]="emptyState.isCelebration"
-                [@fadeIn]="emptyState.isCelebration ? 'in' : null"
-              >
-                @if (emptyState.isCelebration) {
-                  <span class="mb-3 text-2xl font-headline font-extrabold">✦</span>
-                  <p class="text-lg font-headline font-bold">Today's clear.</p>
-                } @else {
-                  <span class="material-symbols-outlined mb-3 text-3xl opacity-20" aria-hidden="true">inbox</span>
-                  <p class="text-sm font-semibold text-on-surface">{{ emptyState.headline }}</p>
-                }
-                <p
-                  class="mt-2 max-w-[15rem] text-sm"
-                  [class.text-on-surface-variant]="!emptyState.isCelebration"
-                >
-                  {{ emptyState.subtext }}
-                </p>
+              <div class="flex flex-col items-center justify-center rounded-xl px-4 py-8 text-center">
+                <span class="material-symbols-outlined mb-3 text-3xl opacity-20" aria-hidden="true">inbox</span>
+                <p class="text-sm font-semibold text-on-surface">{{ emptyState.headline }}</p>
+                <p class="mt-2 max-w-[15rem] text-sm text-on-surface-variant">{{ emptyState.subtext }}</p>
                 @if (emptyState.showCta) {
                   <a
                     routerLink="/tasks/new"

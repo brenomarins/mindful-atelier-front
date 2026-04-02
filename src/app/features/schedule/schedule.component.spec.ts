@@ -96,4 +96,34 @@ describe('ScheduleComponent', () => {
     const result = component.getEmptyStateContext(dateStr, true, true);
     expect(result.isCelebration).toBeFalsy();
   });
+
+  it('getEmptyStateContext returns weekend copy on Saturday', () => {
+    // 2026-02-07 is a Saturday
+    const result = component.getEmptyStateContext('2026-02-07', false, false);
+    expect(result.headline).toBe('Rest is part of the work.');
+    expect(result.showCta).toBeFalse();
+  });
+
+  it('getEmptyStateContext returns Monday morning copy before noon', () => {
+    // 2026-02-02 is a Monday; pass 10am as now
+    const mondayMorning = new Date('2026-02-02T10:00:00');
+    const result = component.getEmptyStateContext('2026-02-02', false, false, mondayMorning);
+    expect(result.headline).toBe('Start your week.');
+    expect(result.showCta).toBeTrue();
+  });
+
+  it('getEmptyStateContext returns Friday afternoon copy after 3pm', () => {
+    // 2026-02-06 is a Friday; pass 4pm as now
+    const fridayAfternoon = new Date('2026-02-06T16:00:00');
+    const result = component.getEmptyStateContext('2026-02-06', false, false, fridayAfternoon);
+    expect(result.headline).toBe('Light day ahead.');
+    expect(result.showCta).toBeTrue();
+  });
+
+  it('getEmptyStateContext returns past-tasks copy for past day with incomplete tasks', () => {
+    // Use a date that is definitely in the past
+    const result = component.getEmptyStateContext('2020-01-01', true, false);
+    expect(result.headline).toBe("These didn't make it.");
+    expect(result.showCta).toBeFalse();
+  });
 });

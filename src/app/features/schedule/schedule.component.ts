@@ -195,8 +195,7 @@ export class ScheduleComponent implements OnInit {
     return date;
   }
 
-  getEmptyStateContext(date: string, hadTasks: boolean, allDone: boolean): EmptyStateContext {
-    const now = new Date();
+  getEmptyStateContext(date: string, hadTasks: boolean, allDone: boolean, now = new Date()): EmptyStateContext {
     const hour = now.getHours();
     const dayOfWeek = new Date(`${date}T12:00:00`).getDay();
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
