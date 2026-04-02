@@ -68,4 +68,41 @@ describe('TaskCardComponent', () => {
     cb2.dispatchEvent(new Event('change'));
     expect(spy).toHaveBeenCalledWith('backlog');
   });
+
+  it('isDone returns true when task status is done', () => {
+    component.task = { ...mockTask, status: 'done' };
+    expect(component.isDone).toBeTrue();
+  });
+
+  it('isDone returns false when task status is backlog', () => {
+    expect(component.isDone).toBeFalse();
+  });
+
+  it('cardClasses includes task-card--done for done tasks', () => {
+    component.task = { ...mockTask, status: 'done' };
+    expect(component.cardClasses).toContain('task-card--done');
+  });
+
+  it('cardClasses includes hover classes for non-done tasks', () => {
+    expect(component.cardClasses).toContain('hover:-translate-y-0.5');
+    expect(component.cardClasses).toContain('hover:shadow-md');
+  });
+
+  it('renders task-card__checkbox class on the checkbox input', () => {
+    const cb = fixture.nativeElement.querySelector('input[type="checkbox"]') as HTMLInputElement;
+    expect(cb.classList).toContain('task-card__checkbox');
+  });
+
+  it('renders task-card__title class on the title element', () => {
+    fixture.detectChanges();
+    const title = fixture.nativeElement.querySelector('.task-card__title') as HTMLElement;
+    expect(title).toBeTruthy();
+  });
+
+  it('adds task-card__title--done class to title when done', () => {
+    component.task = { ...mockTask, status: 'done' };
+    fixture.detectChanges();
+    const title = fixture.nativeElement.querySelector('.task-card__title') as HTMLElement;
+    expect(title.classList).toContain('task-card__title--done');
+  });
 });
