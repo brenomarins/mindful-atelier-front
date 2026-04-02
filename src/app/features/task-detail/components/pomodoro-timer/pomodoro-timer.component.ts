@@ -1,8 +1,11 @@
-import { Component, Input, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import {
+  Component, Input, OnInit, inject, signal, DestroyRef, ViewChild, ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription, interval, catchError, EMPTY } from 'rxjs';
 import { SessionService } from '../../../../core/services/session.service';
 import { Session } from '../../../../core/models/session.model';
+import { AnimationService } from '../../../../shared/services/animation.service';
 
 type SessionType = 'work' | 'short_break' | 'long_break';
 
@@ -24,7 +27,10 @@ export class PomodoroTimerComponent implements OnInit {
 
   private sessionSvc  = inject(SessionService);
   private destroyRef  = inject(DestroyRef);
+  private animSvc = inject(AnimationService);
   private subscription: Subscription | null = null;
+  @ViewChild('progressRing', { static: false }) progressRingRef?: ElementRef<SVGCircleElement>;
+  @ViewChild('timerDisplay', { static: false }) timerDisplayRef?: ElementRef<HTMLElement>;
 
   timeRemaining    = signal<number>(25 * 60);
   isRunning        = signal<boolean>(false);
@@ -34,6 +40,7 @@ export class PomodoroTimerComponent implements OnInit {
   otherTaskRunning = signal<boolean>(false);
   totalMinutes     = signal<number>(0);
   pomodoroCount    = signal<number>(0);
+  readonly circumference = 2 * Math.PI * 88;
 
   get presetDuration(): number { return PRESET_DURATIONS[this.sessionType()]; }
 
@@ -59,6 +66,7 @@ export class PomodoroTimerComponent implements OnInit {
       const remaining = Math.floor((startMs + s.durationMinutes * 60 * 1000 - Date.now()) / 1000);
       if (remaining > 0) {
         this.timeRemaining.set(remaining);
+        queueMicrotask(() => this.updateRing(remaining / (s.durationMinutes * 60)));
         this.isRunning.set(true);
         this.currentSessionId.set(s.id);
         this.startInterval();
@@ -88,6 +96,7 @@ export class PomodoroTimerComponent implements OnInit {
       this.currentSessionId.set(session.id);
       this.isRunning.set(true);
       this.sessionComplete.set(false);
+      queueMicrotask(() => this.updateRing(1));
       this.startInterval();
     });
   }
@@ -117,6 +126,7 @@ export class PomodoroTimerComponent implements OnInit {
     this.currentSessionId.set(null);
     this.timeRemaining.set(this.presetDuration);
     this.sessionComplete.set(false);
+    this.updateRing(1);
     if (id) {
       this.sessionSvc.interrupt(id).pipe(catchError(() => EMPTY)).subscribe();
     }
@@ -133,24 +143,33 @@ export class PomodoroTimerComponent implements OnInit {
     this.sessionType.set(type);
     this.timeRemaining.set(PRESET_DURATIONS[type]);
     this.sessionComplete.set(false);
+    this.updateRing(1);
   }
 
   private startInterval(): void {
     this.stopInterval(); // guard against double-subscription
-    this.subscription = interval(1000).subscribe(() => {
-      const remaining = this.timeRemaining() - 1;
-      if (remaining <= 0) {
-        this.timeRemaining.set(0);
-        this.onTimerReachedZero();
-      } else {
-        this.timeRemaining.set(remaining);
-      }
-    });
+    this.subscription = interval(1000).subscribe(() => this.onTimerTick());
   }
 
   private stopInterval(): void {
     this.subscription?.unsubscribe();
     this.subscription = null;
+  }
+
+  onTimerTick(): void {
+    const remaining = this.timeRemaining() - 1;
+    if (remaining <= 0) {
+      this.timeRemaining.set(0);
+      this.updateRing(0);
+      this.onTimerReachedZero();
+      return;
+    }
+
+    this.timeRemaining.set(remaining);
+    this.updateRing(remaining / this.presetDuration);
+    if (this.timerDisplayRef?.nativeElement) {
+      this.animSvc.animatePomodoroTick(this.timerDisplayRef.nativeElement);
+    }
   }
 
   private onTimerReachedZero(): void {
@@ -159,9 +178,18 @@ export class PomodoroTimerComponent implements OnInit {
     this.isRunning.set(false);
     this.currentSessionId.set(null);
     this.sessionComplete.set(true);
+    if (this.timerDisplayRef?.nativeElement) {
+      this.animSvc.animatePomodoroComplete(this.timerDisplayRef.nativeElement);
+    }
     if (id) {
       this.sessionSvc.complete(id).pipe(catchError(() => EMPTY))
         .subscribe(() => this.loadStats());
+    }
+  }
+
+  private updateRing(progress: number): void {
+    if (this.progressRingRef?.nativeElement) {
+      this.animSvc.animatePomodoroRing(this.progressRingRef.nativeElement, progress);
     }
   }
 }

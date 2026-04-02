@@ -12,8 +12,31 @@
     } @else if (sessionComplete()) {
       <p class="text-2xl font-headline font-bold mb-8 opacity-80">Session complete!</p>
     } @else {
-      <div class="text-7xl font-headline font-extrabold mb-8 tabular-nums tracking-tighter">
-        {{ displayTime }}
+      <div class="relative mb-8 flex h-48 w-48 items-center justify-center">
+        <svg
+          class="absolute inset-0 h-full w-full -rotate-90"
+          viewBox="0 0 200 200"
+        >
+          <circle
+            cx="100" cy="100" r="88"
+            fill="none"
+            stroke="rgba(149,212,179,0.2)"
+            stroke-width="6"
+          />
+          <circle
+            #progressRing
+            cx="100" cy="100" r="88"
+            fill="none"
+            stroke="#95d4b3"
+            stroke-width="6"
+            stroke-linecap="round"
+            [attr.stroke-dasharray]="circumference"
+            [attr.stroke-dashoffset]="circumference"
+          />
+        </svg>
+        <div #timerDisplay class="relative z-10 text-5xl font-headline font-extrabold tabular-nums tracking-tighter">
+          {{ displayTime }}
+        </div>
       </div>
     }
 

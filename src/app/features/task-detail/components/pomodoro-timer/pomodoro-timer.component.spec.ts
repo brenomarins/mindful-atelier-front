@@ -5,11 +5,13 @@ import { of, throwError } from 'rxjs';
 import { PomodoroTimerComponent } from './pomodoro-timer.component';
 import { SessionService } from '../../../../core/services/session.service';
 import { Session } from '../../../../core/models/session.model';
+import { AnimationService } from '../../../../shared/services/animation.service';
 
 describe('PomodoroTimerComponent', () => {
   let fixture: ComponentFixture<PomodoroTimerComponent>;
   let component: PomodoroTimerComponent;
   let sessionSvc: jasmine.SpyObj<SessionService>;
+  let animSvc: AnimationService;
 
   const makeSession = (overrides: Partial<Session> = {}): Session => ({
     id: 'session-1',
@@ -42,6 +44,7 @@ describe('PomodoroTimerComponent', () => {
 
     fixture = TestBed.createComponent(PomodoroTimerComponent);
     component = fixture.componentInstance;
+    animSvc = TestBed.inject(AnimationService);
     component.taskId = 'task-1';
     component.openSession = null;
     fixture.detectChanges();
@@ -119,5 +122,22 @@ describe('PomodoroTimerComponent', () => {
     component.ngOnInit();
     expect(component.totalMinutes()).toBe(50);
     expect(component.pomodoroCount()).toBe(2);
+  });
+
+  it('calls animatePomodoroTick on each timer tick', () => {
+    spyOn(animSvc, 'animatePomodoroTick');
+    component.taskId = 'test-task';
+    fixture.detectChanges();
+    component.onTimerTick();
+    expect(animSvc.animatePomodoroTick).toHaveBeenCalled();
+  });
+
+  it('calls animatePomodoroComplete when session reaches zero', () => {
+    spyOn(animSvc, 'animatePomodoroComplete');
+    component.taskId = 'test-task';
+    component.timeRemaining.set(1);
+    fixture.detectChanges();
+    component.onTimerTick();
+    expect(animSvc.animatePomodoroComplete).toHaveBeenCalled();
   });
 });
