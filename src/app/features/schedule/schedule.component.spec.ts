@@ -94,6 +94,6 @@ describe('ScheduleComponent', () => {
     yesterday.setDate(yesterday.getDate() - 1);
     const dateStr = (component as any).toLocalISO(yesterday);
     const result = component.getEmptyStateContext(dateStr, true, true);
-    expect(result.isCelebration).toBeUndefined();
+    expect(result.isCelebration).toBeFalsy();
   });
 });

@@ -91,17 +91,17 @@
               </div>
             }
 
-        <!-- "All Done" celebration — shown when today's tasks are all complete -->
-        @if (col.isToday && col.allDone) {
-          <div
-            class="mt-2 flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-container px-4 py-6 text-center"
-            [@fadeIn]
-          >
-            <span class="mb-2 text-2xl font-headline font-extrabold text-primary-fixed-dim">✦</span>
-            <p class="font-headline font-bold text-primary-fixed-dim">Today's clear.</p>
-            <p class="mt-1 text-sm text-primary-fixed-dim opacity-80">You focused on what mattered.</p>
-          </div>
-        }
+            <!-- "All Done" celebration — shown when today's tasks are all complete -->
+            @if (col.isToday && col.allDone) {
+              <div
+                class="mt-2 flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-container px-4 py-6 text-center"
+                [@fadeIn]
+              >
+                <span class="mb-2 text-2xl font-headline font-extrabold text-primary-fixed-dim">✦</span>
+                <p class="font-headline font-bold text-primary-fixed-dim">Today's clear.</p>
+                <p class="mt-1 text-sm text-primary-fixed-dim opacity-80">You focused on what mattered.</p>
+              </div>
+            }
 
             @if (col.tasks.length === 0) {
               @let emptyState = getEmptyStateContext(col.date, col.hadTasks, col.allDone);
