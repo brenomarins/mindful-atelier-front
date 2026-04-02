@@ -72,6 +72,7 @@ export class AnimationService {
     gsap.to(titleEl, { opacity: 1, duration: T.FAST, ease: T.EASE_OUT });
   }
 
+  /** @returns A GSAP tween. Caller MUST call `.kill()` in ngOnDestroy to prevent memory leaks. */
   animateTodayClearBreathing(el: HTMLElement): gsap.core.Tween {
     if (this.reducedMotion) {
       return gsap.to(el, { duration: 0 });
@@ -86,6 +87,7 @@ export class AnimationService {
     });
   }
 
+  /** @returns A GSAP tween. Caller MUST call `.kill()` in ngOnDestroy to prevent memory leaks. */
   startTodayGlow(el: HTMLElement): gsap.core.Tween {
     if (this.reducedMotion) {
       return gsap.to(el, { duration: 0 });
@@ -145,6 +147,7 @@ export class AnimationService {
     );
   }
 
+  /** @returns A GSAP tween. Caller MUST call `.kill()` in ngOnDestroy to prevent memory leaks. */
   startTodayHeaderCycle(el: HTMLElement): gsap.core.Tween {
     if (this.reducedMotion) {
       return gsap.to(el, { duration: 0 });
@@ -188,6 +191,15 @@ export class AnimationService {
     if (this.reducedMotion) return;
     gsap.to(iconEl, { scale: 1, duration: T.FAST, ease: T.EASE_OUT });
     gsap.to(labelEl, { x: 0, duration: T.FAST, ease: T.EASE_OUT });
+  }
+
+  startStartWeekShimmer(btnEl: HTMLElement): gsap.core.Tween {
+    if (this.reducedMotion) return gsap.to(btnEl, { duration: 0 });
+    return gsap.fromTo(
+      btnEl,
+      { backgroundPosition: '-200% 0' },
+      { backgroundPosition: '200% 0', duration: T.SLOW, ease: 'none', paused: true },
+    );
   }
 
   animateStartWeekClick(btnEl: HTMLElement): void {
@@ -323,6 +335,7 @@ export class AnimationService {
   }
 
   private _sparkBurst(anchorEl: HTMLElement): void {
+    if (this.reducedMotion) return;
     const rect = anchorEl.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
