@@ -179,13 +179,13 @@ export class ScheduleComponent implements OnInit, AfterViewInit, OnDestroy {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
       this.columns.update(cols => this.withColumnMeta(cols));
       const columnEl = this.dropColumnEls?.toArray()[this.columns().findIndex(col => col.date === targetDate)]?.nativeElement;
-      if (columnEl) this.animSvc.animateDropColumnPulse(columnEl);
+      if (columnEl) setTimeout(() => this.animSvc.animateDropColumnPulse(columnEl));
     } else {
       const task = event.previousContainer.data[event.previousIndex];
       transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
       this.columns.update(cols => this.withColumnMeta(cols));
       const columnEl = this.dropColumnEls?.toArray()[this.columns().findIndex(col => col.date === targetDate)]?.nativeElement;
-      if (columnEl) this.animSvc.animateDropColumnPulse(columnEl);
+      if (columnEl) setTimeout(() => this.animSvc.animateDropColumnPulse(columnEl));
       this.taskSvc.update(task.id, { scheduledDay: targetDate }).subscribe();
     }
   }
