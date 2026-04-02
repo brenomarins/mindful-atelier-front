@@ -51,7 +51,7 @@ export class AnimationService {
         '-=0.1',
       )
       .to(titleEl, { opacity: 0.72, duration: T.FAST, ease: T.EASE_OUT }, '<')
-      .add(() => this.sparkBurst(checkboxEl), '-=0.15')
+      .add(() => this._sparkBurst(checkboxEl), '-=0.15')
       .to(cardEl, { opacity: 0.6, x: 4, duration: T.MEDIUM, ease: T.EASE_OUT }, '+=0.1');
   }
 
@@ -291,7 +291,7 @@ export class AnimationService {
 
   animatePomodoroComplete(containerEl: HTMLElement): void {
     if (this.reducedMotion) return;
-    this.sparkBurst(containerEl);
+    this._sparkBurst(containerEl);
   }
 
   animateReflectionOpen(el: HTMLElement): void {
@@ -322,7 +322,7 @@ export class AnimationService {
     });
   }
 
-  sparkBurst(anchorEl: HTMLElement): void {
+  private _sparkBurst(anchorEl: HTMLElement): void {
     const rect = anchorEl.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
