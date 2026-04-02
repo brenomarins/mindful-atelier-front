@@ -113,7 +113,12 @@ describe('TaskCardComponent', () => {
     const cb = fixture.nativeElement.querySelector('input[type="checkbox"]') as HTMLInputElement;
     cb.checked = true;
     cb.dispatchEvent(new Event('change'));
-    expect(animSvc.animateTaskCompletion).toHaveBeenCalled();
+    expect(animSvc.animateTaskCompletion).toHaveBeenCalledWith(
+      component.checkboxElRef.nativeElement,
+      component.titleElRef.nativeElement,
+      component.strikeElRef.nativeElement,
+      component.cardElRef.nativeElement,
+    );
   });
 
   it('calls animateTaskUncompletion when checkbox is unchecked', () => {

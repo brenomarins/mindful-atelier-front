@@ -52,7 +52,7 @@ export class TaskCardComponent implements OnInit {
 
   ngOnInit(): void {
     // Set strikethrough immediately for cards that are already done on render
-    if (this.isDone && this.strikeElRef?.nativeElement) {
+    if (this.isDone) {
       this.strikeElRef.nativeElement.style.width = '100%';
     }
   }
