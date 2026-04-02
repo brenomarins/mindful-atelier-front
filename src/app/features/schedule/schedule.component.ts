@@ -84,9 +84,7 @@ export class ScheduleComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('todayGlowEl',      { static: false }) todayGlowElRef?: ElementRef<HTMLElement>;
   @ViewChild('reflectionBodyEl', { static: false }) reflectionBodyElRef?: ElementRef<HTMLElement>;
   @ViewChildren('dropColumnEl') dropColumnEls!: QueryList<ElementRef<HTMLElement>>;
-  @ViewChild(TaskCardComponent, { static: false }) private _firstTaskCard?: TaskCardComponent;
   @ViewChildren(TaskCardComponent, { read: ElementRef }) taskCardEls!: QueryList<ElementRef<HTMLElement>>;
-  @ViewChildren('todayClearEl') todayClearEls!: QueryList<ElementRef<HTMLElement>>;
   private ambientTweens: KillableTween[] = [];
 
   ngOnInit(): void {
@@ -94,9 +92,7 @@ export class ScheduleComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadTodayJournal();
   }
 
-  ngAfterViewInit(): void {
-    this._startAmbientAnimations();
-  }
+  ngAfterViewInit(): void {}
 
   ngOnDestroy(): void {
     this.ambientTweens.forEach(t => t.kill());
@@ -139,6 +135,8 @@ export class ScheduleComponent implements OnInit, AfterViewInit, OnDestroy {
           };
         }));
         this.loading.set(false);
+        // Run ambient animations after data is ready and Angular has rendered
+        setTimeout(() => this._startAmbientAnimations());
       },
       error: () => this.loading.set(false),
     });
@@ -178,16 +176,14 @@ export class ScheduleComponent implements OnInit, AfterViewInit, OnDestroy {
     if (event.previousContainer === event.container) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
       this.columns.update(cols => this.withColumnMeta(cols));
-      const columnEl = this.dropColumnEls?.toArray()[this.columns().findIndex(col => col.date === targetDate)]?.nativeElement;
-      if (columnEl) setTimeout(() => this.animSvc.animateDropColumnPulse(columnEl));
     } else {
       const task = event.previousContainer.data[event.previousIndex];
       transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
       this.columns.update(cols => this.withColumnMeta(cols));
-      const columnEl = this.dropColumnEls?.toArray()[this.columns().findIndex(col => col.date === targetDate)]?.nativeElement;
-      if (columnEl) setTimeout(() => this.animSvc.animateDropColumnPulse(columnEl));
       this.taskSvc.update(task.id, { scheduledDay: targetDate }).subscribe();
     }
+    const columnEl = this.dropColumnEls?.toArray()[this.columns().findIndex(col => col.date === targetDate)]?.nativeElement;
+    if (columnEl) setTimeout(() => this.animSvc.animateDropColumnPulse(columnEl));
   }
 
   onStatusChange(task: Task, newStatus: 'backlog' | 'in-progress' | 'done'): void {

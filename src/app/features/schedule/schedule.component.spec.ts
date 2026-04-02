@@ -143,11 +143,10 @@ describe('ScheduleComponent', () => {
     expect(result.showCta).toBeFalse();
   });
 
-  it('calls animateDayNumbers after view init', () => {
+  it('calls animateDayNumbers after ambient animations start', () => {
     const animSvc = TestBed.inject(AnimationService);
-    // animateDayNumbers is already spied on in beforeEach; just reset and re-check
     (animSvc.animateDayNumbers as jasmine.Spy).calls.reset();
-    component.ngAfterViewInit();
+    (component as any)._startAmbientAnimations();
     expect(animSvc.animateDayNumbers).toHaveBeenCalled();
   });
 
