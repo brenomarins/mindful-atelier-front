@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { JournalService } from '../../core/services/journal.service';
 import { Mood, JournalEntry, JournalEntryRequest } from '../../core/models/journal.model';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-journal',
@@ -16,8 +17,9 @@ import { Mood, JournalEntry, JournalEntryRequest } from '../../core/models/journ
 })
 export class JournalComponent {
   private journalSvc = inject(JournalService);
-  private router     = inject(Router);
+  private router = inject(Router);
   private destroyRef = inject(DestroyRef);
+  private toastSvc = inject(ToastService);
 
   // ── State signals ──────────────────────────────────────────────────────────
   selectedDate = signal<string>(this.todayIso());
@@ -121,6 +123,7 @@ export class JournalComponent {
       next: (saved) => {
         this.entry.set(saved);
         this.saving.set(false);
+        this.toastSvc.show(navigateAfter ? 'Reflection complete' : 'Reflection saved');
         if (navigateAfter) {
           this.router.navigate(['/schedule']);
         }

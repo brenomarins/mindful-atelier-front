@@ -24,13 +24,14 @@
       [attr.aria-label]="'Mark ' + task.title + (isDone ? ' as incomplete' : ' as complete')"
       (click)="$event.stopPropagation()"
       (change)="statusChange.emit($any($event.target).checked ? 'done' : 'backlog')"
-      class="w-4 h-4 cursor-pointer accent-primary mt-0.5"
+      class="task-card__checkbox w-4 h-4 cursor-pointer accent-primary mt-0.5"
     />
   </div>
 
   <h4
-    class="font-body font-bold text-sm leading-snug"
+    class="task-card__title font-body font-bold text-sm leading-snug"
     [class.line-through]="isDone"
+    [class.task-card__title--done]="isDone"
     [class.text-outline]="isDone"
     [class.text-on-surface]="!isDone"
   >

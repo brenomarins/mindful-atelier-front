@@ -29,8 +29,11 @@ export class TaskCardComponent {
   }
 
   get cardClasses(): string {
-    if (this.isDone) return 'bg-surface-dim/40 opacity-60';
-    return 'bg-surface-container-lowest shadow-sm hover:-translate-y-0.5 transition-all duration-150';
+    if (this.isDone) {
+      return 'task-card--done bg-surface-dim/40 shadow-sm transition-all duration-150';
+    }
+
+    return 'bg-surface-container-lowest shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-150';
   }
 
   get leftBorder(): string {

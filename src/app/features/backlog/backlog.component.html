@@ -15,6 +15,7 @@
         type="text"
         placeholder="Search tasks..."
         class="pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant/20 rounded-xl text-sm w-64 focus:ring-1 focus:ring-primary-container outline-none transition-all font-body"
+        [value]="searchInput()"
         (input)="onSearchInput($any($event.target).value)"
       />
     </div>
@@ -37,44 +38,43 @@
   <div class="flex items-center gap-3 mb-8 overflow-x-auto pb-2">
 
     <!-- Status chips -->
-    <button
-      type="button"
-      *ngFor="let chip of [
-        { label: 'All Tasks', value: 'all', icon: 'filter_list' },
-        { label: 'Backlog',      value: 'backlog',      icon: null },
-        { label: 'In Progress',  value: 'in-progress',  icon: null },
-        { label: 'Done',         value: 'done',         icon: null }
-      ]"
-      class="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer font-body"
-      [class.bg-secondary-fixed-dim]="statusFilter() === chip.value"
-      [class.text-on-secondary-fixed]="statusFilter() === chip.value"
-      [class.bg-surface-container-high]="statusFilter() !== chip.value"
-      [class.text-on-surface-variant]="statusFilter() !== chip.value"
-      [class.hover:bg-surface-container-highest]="statusFilter() !== chip.value"
-      (click)="onStatusChipClick($any(chip.value))"
-    >
-      <span *ngIf="chip.icon" class="material-symbols-outlined text-[16px]">{{ chip.icon }}</span>
-      <span>{{ chip.label }}</span>
-    </button>
+    @for (chip of statusChips; track chip.value) {
+      <button
+        type="button"
+        class="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors duration-150 cursor-pointer font-body"
+        [class.bg-secondary-fixed-dim]="statusFilter() === chip.value"
+        [class.text-on-secondary-fixed]="statusFilter() === chip.value"
+        [class.bg-surface-container-high]="statusFilter() !== chip.value"
+        [class.text-on-surface-variant]="statusFilter() !== chip.value"
+        [class.hover:bg-surface-container-highest]="statusFilter() !== chip.value"
+        (click)="onStatusChipClick($any(chip.value))"
+      >
+        @if (chip.icon) {
+          <span class="material-symbols-outlined text-[16px]">{{ chip.icon }}</span>
+        }
+        <span>{{ chip.label }}</span>
+      </button>
+    }
 
     <!-- Tag chips -->
-    <button
-      type="button"
-      *ngFor="let tag of tags()"
-      class="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer font-body"
-      [class.bg-secondary-fixed-dim]="tagFilter() === tag.id"
-      [class.text-on-secondary-fixed]="tagFilter() === tag.id"
-      [class.bg-surface-container-high]="tagFilter() !== tag.id"
-      [class.text-on-surface-variant]="tagFilter() !== tag.id"
-      [class.hover:bg-surface-container-highest]="tagFilter() !== tag.id"
-      (click)="onTagChipClick(tagFilter() === tag.id ? null : tag.id)"
-    >
-      <span
-        class="w-2 h-2 rounded-full inline-block"
-        [style.background-color]="tag.color"
-      ></span>
-      <span>{{ tag.name }}</span>
-    </button>
+    @for (tag of tags(); track tag.id) {
+      <button
+        type="button"
+        class="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors duration-150 cursor-pointer font-body"
+        [class.bg-secondary-fixed-dim]="tagFilter() === tag.id"
+        [class.text-on-secondary-fixed]="tagFilter() === tag.id"
+        [class.bg-surface-container-high]="tagFilter() !== tag.id"
+        [class.text-on-surface-variant]="tagFilter() !== tag.id"
+        [class.hover:bg-surface-container-highest]="tagFilter() !== tag.id"
+        (click)="onTagChipClick(tagFilter() === tag.id ? null : tag.id)"
+      >
+        <span
+          class="w-2 h-2 rounded-full inline-block"
+          [style.background-color]="tag.color"
+        ></span>
+        <span>{{ tag.name }}</span>
+      </button>
+    }
 
     <!-- Sort button -->
     <button
@@ -96,13 +96,32 @@
 
         <!-- Loading skeleton -->
         <div *ngIf="loading()" class="p-4 space-y-3">
-          <div *ngFor="let i of [1,2,3,4,5]" class="animate-pulse h-14 bg-surface-container-high rounded-xl"></div>
+          <div *ngFor="let row of skeletonRows" class="rounded-xl bg-surface-container-high p-4">
+            <div class="animate-shimmer rounded-xl">
+              <div class="flex items-center gap-4">
+                <div class="h-4 w-4 rounded bg-white/15"></div>
+                <div class="h-4 w-4 rounded bg-white/15"></div>
+                <div class="h-4 rounded-full bg-white/15" [style.width]="skeletonNameWidth(row)"></div>
+                <div class="h-4 w-20 rounded-full bg-white/12"></div>
+                <div class="h-4 w-24 rounded-full bg-white/12"></div>
+                <div class="h-4 w-20 rounded-full bg-white/12"></div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Empty state -->
         <div *ngIf="!loading() && tasks().length === 0" class="py-16 text-center text-outline">
-          <span class="material-symbols-outlined text-[48px] opacity-40">format_list_bulleted</span>
-          <p class="mt-2 text-sm font-body">No tasks match your filters.</p>
+          <span class="material-symbols-outlined text-[48px] opacity-30">format_list_bulleted</span>
+          <p class="mt-3 text-lg font-headline font-bold text-on-surface">No tasks match</p>
+          <p class="mt-2 text-sm font-body">Try a different filter or clear your search.</p>
+          <button
+            type="button"
+            class="mt-5 rounded-full bg-surface-container-high px-4 py-2 text-xs font-bold text-on-surface transition-colors hover:bg-surface-container-highest"
+            (click)="resetFilters()"
+          >
+            Clear filters
+          </button>
         </div>
 
         <!-- Table -->

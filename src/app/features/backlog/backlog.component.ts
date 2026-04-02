@@ -15,6 +15,7 @@ import { TagService } from '../../core/services/tag.service';
 import { StatsService, CompletionStats, TipCard } from '../../core/services/stats.service';
 import { Task, TaskStatus } from '../../core/models/task.model';
 import { Tag } from '../../core/models/tag.model';
+import { ToastService } from '../../shared/services/toast.service';
 
 export interface WeekDay {
   label: string;    // "Mon, Mar 30"
@@ -29,22 +30,31 @@ export interface WeekDay {
   templateUrl: './backlog.component.html',
 })
 export class BacklogComponent implements OnInit {
-  private taskSvc  = inject(TaskService);
-  private tagSvc   = inject(TagService);
+  private taskSvc = inject(TaskService);
+  private tagSvc = inject(TagService);
   private statsSvc = inject(StatsService);
-  private router   = inject(Router);
+  private router = inject(Router);
   private destroyRef = inject(DestroyRef);
+  private toastSvc = inject(ToastService);
 
   // ── State signals ──────────────────────────────────────────────────────────
   tasks          = signal<Task[]>([]);
   tags           = signal<Tag[]>([]);
-  loading        = signal(false);
+  loading        = signal(true);
+  searchInput    = signal('');
   searchQuery    = signal('');
   statusFilter   = signal<TaskStatus | 'all'>('all');
   tagFilter      = signal<string | null>(null);
   sortDir        = signal<'asc' | 'desc'>('asc');
   completionRate = signal<CompletionStats | null>(null);
   tipCard        = signal<TipCard | null>(null);
+  readonly statusChips = [
+    { label: 'All Tasks', value: 'all', icon: 'filter_list' },
+    { label: 'Backlog', value: 'backlog', icon: null },
+    { label: 'In Progress', value: 'in-progress', icon: null },
+    { label: 'Done', value: 'done', icon: null },
+  ] as const;
+  readonly skeletonRows = [0, 1, 2, 3, 4];
 
   private togglingIds = new Set<string>();
   private draggingTaskId = signal<string | null>(null);
@@ -120,9 +130,14 @@ export class BacklogComponent implements OnInit {
     return this.tags().find(t => t.id === id);
   }
 
+  skeletonNameWidth(row: number): string {
+    return ['50%', '66%', '60%', '72%', '45%'][row] ?? '55%';
+  }
+
   // ── Event handlers ─────────────────────────────────────────────────────────
 
   onSearchInput(value: string): void {
+    this.searchInput.set(value);
     this.searchSubject.next(value);
   }
 
@@ -147,6 +162,14 @@ export class BacklogComponent implements OnInit {
     this.router.navigate(['/tasks', task.id]);
   }
 
+  resetFilters(): void {
+    this.searchInput.set('');
+    this.searchQuery.set('');
+    this.statusFilter.set('all');
+    this.tagFilter.set(null);
+    this.sortDir.set('asc');
+  }
+
   onAddTask(): void {
     this.router.navigate(['/tasks/new']);
   }
@@ -163,7 +186,10 @@ export class BacklogComponent implements OnInit {
     this.taskSvc.update(task.id, { status: newStatus })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next:  () => this.togglingIds.delete(task.id),
+        next:  () => {
+          this.togglingIds.delete(task.id);
+          this.toastSvc.show(newStatus === 'done' ? 'Task moved to Done' : 'Task reopened');
+        },
         error: () => {
           this.togglingIds.delete(task.id);
           this.tasks.update(list =>
