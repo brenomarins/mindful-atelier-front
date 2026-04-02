@@ -1,5 +1,6 @@
 import {
-  Component, inject, signal, computed, OnInit,
+  Component, inject, signal, computed, OnInit, AfterViewInit, OnDestroy,
+  QueryList, ElementRef, ViewChildren, ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -21,6 +22,9 @@ import { TaskCardComponent } from '../../shared/components/task-card/task-card.c
 import { Router } from '@angular/router';
 import { ToastService } from '../../shared/services/toast.service';
 import { toLocalISO } from '../../core/utils/date.utils';
+import { AnimationService } from '../../shared/services/animation.service';
+
+type KillableTween = { kill(): void };
 
 export interface DayColumn {
   date: string;
@@ -45,15 +49,6 @@ interface EmptyStateContext {
   imports: [CommonModule, FormsModule, RouterLink, DragDropModule, TaskCardComponent],
   templateUrl: './schedule.component.html',
   animations: [
-    trigger('reflectionPanel', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'translateY(-8px)' }),
-        animate('300ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })),
-      ]),
-      transition(':leave', [
-        animate('200ms ease-in', style({ opacity: 0, transform: 'translateY(-8px)' })),
-      ]),
-    ]),
     trigger('fadeIn', [
       transition(':enter', [
         style({ opacity: 0 }),
@@ -62,12 +57,13 @@ interface EmptyStateContext {
     ]),
   ],
 })
-export class ScheduleComponent implements OnInit {
+export class ScheduleComponent implements OnInit, AfterViewInit, OnDestroy {
   private taskSvc = inject(TaskService);
   private tagSvc = inject(TagService);
   private journalSvc = inject(JournalService);
   private router = inject(Router);
   private toastSvc = inject(ToastService);
+  private animSvc = inject(AnimationService);
 
   tags = signal<Tag[]>([]);
   columns = signal<DayColumn[]>([]);
@@ -83,10 +79,28 @@ export class ScheduleComponent implements OnInit {
 
   dropListIds = computed(() => this.columns().map(c => `drop-${c.date}`));
   gridTemplateColumns = computed(() => this.columns().map(col => col.isToday ? '2.5fr' : '1fr').join(' '));
+  @ViewChildren('dayNumberEl') dayNumberEls!: QueryList<ElementRef<HTMLElement>>;
+  @ViewChildren('dayLabelEl')  dayLabelEls!: QueryList<ElementRef<HTMLElement>>;
+  @ViewChild('todayGlowEl',      { static: false }) todayGlowElRef?: ElementRef<HTMLElement>;
+  @ViewChild('reflectionBodyEl', { static: false }) reflectionBodyElRef?: ElementRef<HTMLElement>;
+  @ViewChildren('dropColumnEl') dropColumnEls!: QueryList<ElementRef<HTMLElement>>;
+  @ViewChild(TaskCardComponent, { static: false }) private _firstTaskCard?: TaskCardComponent;
+  @ViewChildren(TaskCardComponent, { read: ElementRef }) taskCardEls!: QueryList<ElementRef<HTMLElement>>;
+  @ViewChildren('todayClearEl') todayClearEls!: QueryList<ElementRef<HTMLElement>>;
+  private ambientTweens: KillableTween[] = [];
 
   ngOnInit(): void {
     this.loadWeek();
     this.loadTodayJournal();
+  }
+
+  ngAfterViewInit(): void {
+    this._startAmbientAnimations();
+  }
+
+  ngOnDestroy(): void {
+    this.ambientTweens.forEach(t => t.kill());
+    this.ambientTweens = [];
   }
 
   onAddTask(): void {
@@ -138,19 +152,40 @@ export class ScheduleComponent implements OnInit {
   }
 
   toggleReflection(): void {
-    const next = !this.showReflection();
-    this.showReflection.set(next);
-    localStorage.setItem('reflectionPanelOpen', String(next));
+    if (this.showReflection()) {
+      if (this.reflectionBodyElRef?.nativeElement) {
+        this.animSvc.animateReflectionClose(this.reflectionBodyElRef.nativeElement)
+          .then(() => {
+            this.showReflection.set(false);
+            localStorage.setItem('reflectionPanelOpen', 'false');
+          });
+      } else {
+        this.showReflection.set(false);
+        localStorage.setItem('reflectionPanelOpen', 'false');
+      }
+    } else {
+      this.showReflection.set(true);
+      localStorage.setItem('reflectionPanelOpen', 'true');
+      setTimeout(() => {
+        if (this.reflectionBodyElRef?.nativeElement) {
+          this.animSvc.animateReflectionOpen(this.reflectionBodyElRef.nativeElement);
+        }
+      });
+    }
   }
 
   drop(event: CdkDragDrop<Task[]>, targetDate: string): void {
     if (event.previousContainer === event.container) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
       this.columns.update(cols => this.withColumnMeta(cols));
+      const columnEl = this.dropColumnEls?.toArray()[this.columns().findIndex(col => col.date === targetDate)]?.nativeElement;
+      if (columnEl) this.animSvc.animateDropColumnPulse(columnEl);
     } else {
       const task = event.previousContainer.data[event.previousIndex];
       transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
       this.columns.update(cols => this.withColumnMeta(cols));
+      const columnEl = this.dropColumnEls?.toArray()[this.columns().findIndex(col => col.date === targetDate)]?.nativeElement;
+      if (columnEl) this.animSvc.animateDropColumnPulse(columnEl);
       this.taskSvc.update(task.id, { scheduledDay: targetDate }).subscribe();
     }
   }
@@ -262,5 +297,36 @@ export class ScheduleComponent implements OnInit {
       hadTasks: col.hadTasks || col.tasks.length > 0,
       allDone: col.tasks.length > 0 && col.tasks.every(task => task.status === 'done'),
     }));
+  }
+
+  private _startAmbientAnimations(): void {
+    const cols = this.columns();
+    const todayIndex = cols.findIndex(c => c.isToday);
+
+    // Stagger day numbers in (left-to-right; today uses elastic ease)
+    const numberEntries = this.dayNumberEls.toArray().map((ref, i) => ({
+      el: ref.nativeElement,
+      isToday: i === todayIndex,
+    }));
+    this.animSvc.animateDayNumbers(numberEntries);
+
+    // Task cards stagger in
+    const cardEls = this.taskCardEls.toArray().map(r => r.nativeElement);
+    if (cardEls.length > 0) this.animSvc.animateTaskCardsIn(cardEls);
+
+    // Today glow ring
+    if (this.todayGlowElRef?.nativeElement) {
+      const glow = this.animSvc.startTodayGlow(this.todayGlowElRef.nativeElement);
+      this.ambientTweens.push(glow);
+    }
+
+    // Today header color cycle
+    if (todayIndex >= 0) {
+      const todayLabelEl = this.dayLabelEls.toArray()[todayIndex];
+      if (todayLabelEl) {
+        const cycle = this.animSvc.startTodayHeaderCycle(todayLabelEl.nativeElement);
+        this.ambientTweens.push(cycle);
+      }
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
@@ -7,6 +7,7 @@ import { ScheduleComponent } from './schedule.component';
 import { TaskService } from '../../core/services/task.service';
 import { TagService } from '../../core/services/tag.service';
 import { JournalService } from '../../core/services/journal.service';
+import { AnimationService } from '../../shared/services/animation.service';
 import { of, throwError } from 'rxjs';
 import { toLocalISO } from '../../core/utils/date.utils';
 
@@ -44,6 +45,16 @@ describe('ScheduleComponent', () => {
 
     fixture   = TestBed.createComponent(ScheduleComponent);
     component = fixture.componentInstance;
+
+    // Stub animateReflectionClose so the signal flips synchronously in tests
+    const animSvc = TestBed.inject(AnimationService);
+    spyOn(animSvc, 'animateReflectionClose').and.returnValue(Promise.resolve());
+    spyOn(animSvc, 'animateReflectionOpen');
+    spyOn(animSvc, 'startTodayGlow').and.returnValue({ kill: () => {} } as any);
+    spyOn(animSvc, 'startTodayHeaderCycle').and.returnValue({ kill: () => {} } as any);
+    spyOn(animSvc, 'animateDayNumbers');
+    spyOn(animSvc, 'animateTaskCardsIn');
+
     fixture.detectChanges();
   });
 
@@ -70,19 +81,23 @@ describe('ScheduleComponent', () => {
     expect(component.showReflection()).toBeTrue();
   });
 
-  it('toggleReflection() flips showReflection signal', () => {
+  it('toggleReflection() flips showReflection signal', fakeAsync(() => {
     component.toggleReflection();
+    tick(); // flush Promise.resolve() microtask from animateReflectionClose stub
     expect(component.showReflection()).toBeFalse();
     component.toggleReflection();
+    tick(); // flush setTimeout for open path
     expect(component.showReflection()).toBeTrue();
-  });
+  }));
 
-  it('toggleReflection() persists state to localStorage', () => {
+  it('toggleReflection() persists state to localStorage', fakeAsync(() => {
     component.toggleReflection(); // false
+    tick();
     expect(localStorage.getItem('reflectionPanelOpen')).toBe('false');
     component.toggleReflection(); // true
+    tick();
     expect(localStorage.getItem('reflectionPanelOpen')).toBe('true');
-  });
+  }));
 
   it('getEmptyStateContext returns isCelebration when today and allDone', () => {
     const result = component.getEmptyStateContext(component.today, true, true);
@@ -126,5 +141,21 @@ describe('ScheduleComponent', () => {
     const result = component.getEmptyStateContext('2020-01-01', true, false);
     expect(result.headline).toBe("These didn't make it.");
     expect(result.showCta).toBeFalse();
+  });
+
+  it('calls animateDayNumbers after view init', () => {
+    const animSvc = TestBed.inject(AnimationService);
+    // animateDayNumbers is already spied on in beforeEach; just reset and re-check
+    (animSvc.animateDayNumbers as jasmine.Spy).calls.reset();
+    component.ngAfterViewInit();
+    expect(animSvc.animateDayNumbers).toHaveBeenCalled();
+  });
+
+  it('kills ambient tweens on destroy', () => {
+    const mockTween = { kill: jasmine.createSpy('kill') };
+    (component as any).ambientTweens = [mockTween];
+    component.ngOnDestroy();
+    expect(mockTween.kill).toHaveBeenCalled();
+    expect((component as any).ambientTweens.length).toBe(0);
   });
 });
