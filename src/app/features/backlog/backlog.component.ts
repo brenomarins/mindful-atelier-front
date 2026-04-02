@@ -16,6 +16,7 @@ import { StatsService, CompletionStats, TipCard } from '../../core/services/stat
 import { Task, TaskStatus } from '../../core/models/task.model';
 import { Tag } from '../../core/models/tag.model';
 import { ToastService } from '../../shared/services/toast.service';
+import { AnimationService } from '../../shared/services/animation.service';
 
 export interface WeekDay {
   label: string;    // "Mon, Mar 30"
@@ -36,6 +37,7 @@ export class BacklogComponent implements OnInit {
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
   private toastSvc = inject(ToastService);
+  private animSvc = inject(AnimationService);
 
   // ── State signals ──────────────────────────────────────────────────────────
   tasks          = signal<Task[]>([]);
@@ -152,6 +154,29 @@ export class BacklogComponent implements OnInit {
 
   onTagChipClick(tagId: string | null): void {
     this.tagFilter.set(tagId);
+  }
+
+  onStatusChipClickWithAnimation(chipEl: HTMLElement, value: TaskStatus | 'all'): void {
+    const isActivating = this.statusFilter() !== value;
+    if (isActivating) {
+      this.animSvc.animateFilterChipActivate(chipEl);
+    } else {
+      this.animSvc.animateFilterChipDeactivate(chipEl);
+    }
+
+    this.onStatusChipClick(value);
+  }
+
+  onTagChipClickWithAnimation(chipEl: HTMLElement, tagId: string): void {
+    const willActivate = this.tagFilter() !== tagId;
+    if (willActivate) {
+      this.animSvc.animateFilterChipActivate(chipEl);
+      this.onTagChipClick(tagId);
+      return;
+    }
+
+    this.animSvc.animateFilterChipDeactivate(chipEl);
+    this.onTagChipClick(null);
   }
 
   onToggleSort(): void {

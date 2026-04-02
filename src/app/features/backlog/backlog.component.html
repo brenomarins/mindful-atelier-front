@@ -41,13 +41,13 @@
     @for (chip of statusChips; track chip.value) {
       <button
         type="button"
-        class="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors duration-150 cursor-pointer font-body"
+        class="status-chip flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors duration-150 cursor-pointer font-body"
         [class.bg-secondary-fixed-dim]="statusFilter() === chip.value"
         [class.text-on-secondary-fixed]="statusFilter() === chip.value"
         [class.bg-surface-container-high]="statusFilter() !== chip.value"
         [class.text-on-surface-variant]="statusFilter() !== chip.value"
         [class.hover:bg-surface-container-highest]="statusFilter() !== chip.value"
-        (click)="onStatusChipClick($any(chip.value))"
+        (click)="onStatusChipClickWithAnimation($any($event.currentTarget), $any(chip.value))"
       >
         @if (chip.icon) {
           <span class="material-symbols-outlined text-[16px]">{{ chip.icon }}</span>
@@ -66,7 +66,7 @@
         [class.bg-surface-container-high]="tagFilter() !== tag.id"
         [class.text-on-surface-variant]="tagFilter() !== tag.id"
         [class.hover:bg-surface-container-highest]="tagFilter() !== tag.id"
-        (click)="onTagChipClick(tagFilter() === tag.id ? null : tag.id)"
+        (click)="onTagChipClickWithAnimation($any($event.currentTarget), tag.id)"
       >
         <span
           class="w-2 h-2 rounded-full inline-block"

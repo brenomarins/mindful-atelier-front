@@ -9,6 +9,7 @@ import { StatsService } from '../../core/services/stats.service';
 import { of, throwError, Subject } from 'rxjs';
 import { Task } from '../../core/models/task.model';
 import { Tag } from '../../core/models/tag.model';
+import { AnimationService } from '../../shared/services/animation.service';
 
 const MOCK_TASKS: Task[] = [
   {
@@ -39,6 +40,7 @@ describe('BacklogComponent', () => {
   let tagSvc: jasmine.SpyObj<TagService>;
   let statsSvc: jasmine.SpyObj<StatsService>;
   let router: Router;
+  let animSvc: AnimationService;
 
   beforeEach(() => {
     taskSvc  = jasmine.createSpyObj('TaskService',  ['list', 'update']);
@@ -65,6 +67,7 @@ describe('BacklogComponent', () => {
     fixture   = TestBed.createComponent(BacklogComponent);
     component = fixture.componentInstance;
     router    = TestBed.inject(Router);
+    animSvc   = TestBed.inject(AnimationService);
     fixture.detectChanges();
   });
 
@@ -211,5 +214,28 @@ describe('BacklogComponent', () => {
     expect(checkboxes[0].checked).toBeFalse();
     expect(checkboxes[1].checked).toBeFalse();
     expect(checkboxes[2].checked).toBeTrue();
+  });
+
+  it('calls animateFilterChipActivate when a status chip is clicked', () => {
+    spyOn(animSvc, 'animateFilterChipActivate');
+    const chip = fixture.nativeElement.querySelector('.status-chip') as HTMLElement;
+    component.onStatusChipClickWithAnimation(chip, 'backlog');
+    expect(animSvc.animateFilterChipActivate).toHaveBeenCalledWith(chip);
+  });
+
+  it('calls animateFilterChipActivate when a new status filter is selected', () => {
+    spyOn(animSvc, 'animateFilterChipActivate');
+    const chipEl = document.createElement('button');
+    component.onStatusChipClickWithAnimation(chipEl, 'done');
+    expect(animSvc.animateFilterChipActivate).toHaveBeenCalledWith(chipEl);
+  });
+
+  it('calls animateFilterChipDeactivate when the current status filter is clicked again', () => {
+    spyOn(animSvc, 'animateFilterChipDeactivate');
+    // Set the current filter to 'done' first
+    component.onStatusChipClick('done');
+    const chipEl = document.createElement('button');
+    component.onStatusChipClickWithAnimation(chipEl, 'done');
+    expect(animSvc.animateFilterChipDeactivate).toHaveBeenCalledWith(chipEl);
   });
 });
