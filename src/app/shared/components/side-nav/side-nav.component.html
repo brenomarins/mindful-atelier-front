@@ -6,23 +6,46 @@
     <h2 class="font-headline font-bold text-xl text-primary">Curated Focus</h2>
   </div>
 
-  <nav class="flex-grow space-y-2">
-    @for (item of navItems; track item.route) {
-      <a
-        [routerLink]="item.route"
-        routerLinkActive="bg-surface-container-lowest text-primary font-bold shadow-sm translate-x-1"
-        [routerLinkActiveOptions]="{ exact: false }"
-        class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface opacity-60
-               hover:opacity-100 hover:bg-surface-container-lowest/50 transition-all duration-200"
-      >
-        <span class="material-symbols-outlined" aria-hidden="true">{{ item.icon }}</span>
-        <span class="font-body text-sm tracking-wide font-medium">{{ item.label }}</span>
-      </a>
-    }
+  <nav class="flex-grow relative">
+    <!-- Sliding active pill -->
+    <div
+      #navPill
+      class="absolute left-0 right-0 h-11 rounded-xl bg-surface-container-lowest shadow-sm"
+      style="top: 0; pointer-events: none;"
+    ></div>
+
+    <div class="relative space-y-2" #navList>
+      @for (item of navItems; track item.route) {
+        <a
+          #navItemEl
+          [routerLink]="item.route"
+          routerLinkActive="text-primary font-bold"
+          [routerLinkActiveOptions]="{ exact: false }"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface opacity-60
+                 hover:opacity-100 transition-opacity duration-200 relative z-10"
+          (mouseenter)="onNavHoverIn($event)"
+          (mouseleave)="onNavHoverOut($event)"
+        >
+          <span class="material-symbols-outlined nav-icon" aria-hidden="true">{{ item.icon }}</span>
+          <span class="font-body text-sm tracking-wide font-medium nav-label">{{ item.label }}</span>
+        </a>
+      }
+    </div>
   </nav>
 
-  <button class="mt-4 w-full py-3 px-4 bg-primary text-on-primary rounded-full font-bold text-sm tracking-wide hover:opacity-90 transition-all">
-    Start Week
+  <button
+    #startWeekBtn
+    class="mt-4 w-full py-3 px-4 bg-primary text-on-primary rounded-full font-bold text-sm tracking-wide relative overflow-hidden"
+    (mouseenter)="onStartWeekHover()"
+    (mouseleave)="onStartWeekHoverOut()"
+    (click)="onStartWeekClick()"
+  >
+    <span
+      class="absolute inset-0 rounded-full pointer-events-none"
+      style="background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.18) 50%, transparent 100%); background-size: 200% 100%; background-position: -200% 0;"
+      #shimmerEl
+    ></span>
+    <span class="relative z-10">Start Week</span>
   </button>
 
   <div class="mt-auto pt-6 space-y-2">
