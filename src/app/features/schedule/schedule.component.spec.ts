@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { ScheduleComponent } from './schedule.component';
 import { TaskService } from '../../core/services/task.service';
 import { TagService } from '../../core/services/tag.service';
@@ -31,6 +32,7 @@ describe('ScheduleComponent', () => {
       imports: [ScheduleComponent],
       providers: [
         provideRouter([]),
+        provideNoopAnimations(),
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: TaskService,    useValue: taskSvc },
@@ -79,5 +81,19 @@ describe('ScheduleComponent', () => {
     expect(localStorage.getItem('reflectionPanelOpen')).toBe('false');
     component.toggleReflection(); // true
     expect(localStorage.getItem('reflectionPanelOpen')).toBe('true');
+  });
+
+  it('getEmptyStateContext returns isCelebration when today and allDone', () => {
+    const result = component.getEmptyStateContext(component.today, true, true);
+    expect(result.isCelebration).toBeTrue();
+    expect(result.showCta).toBeFalse();
+  });
+
+  it('getEmptyStateContext does NOT return isCelebration for a past date that is all done', () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const dateStr = (component as any).toLocalISO(yesterday);
+    const result = component.getEmptyStateContext(dateStr, true, true);
+    expect(result.isCelebration).toBeUndefined();
   });
 });
