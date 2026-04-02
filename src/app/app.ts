@@ -12,12 +12,11 @@ import { ToastComponent } from './shared/components/toast/toast.component';
     trigger('routeAnimation', [
       transition('* <=> *', [
         query(':leave', [
-          style({ opacity: 1, transform: 'translateY(0)' }),
           animate('180ms ease-in', style({ opacity: 0, transform: 'translateY(-4px)' })),
         ], { optional: true }),
         query(':enter', [
-          style({ opacity: 0, transform: 'translateY(8px)' }),
-          animate('220ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })),
+          style({ transform: 'translateY(6px)' }),
+          animate('220ms ease-out', style({ transform: 'translateY(0)' })),
         ], { optional: true }),
       ]),
     ]),
@@ -36,6 +35,7 @@ import { ToastComponent } from './shared/components/toast/toast.component';
 })
 export class App {
   prepareRoute(outlet: RouterOutlet): string {
-    return outlet.activatedRouteData?.['animation'] ?? outlet.activatedRoute?.routeConfig?.path ?? '';
+    if (!outlet?.isActivated) return '';
+    return outlet.activatedRouteData?.['animation'] ?? outlet.activatedRoute.routeConfig?.path ?? '';
   }
 }
