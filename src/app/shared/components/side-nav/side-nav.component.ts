@@ -5,9 +5,8 @@ import {
 import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
+import type gsap from 'gsap';
 import { AnimationService } from '../../services/animation.service';
-
-type KillableTween = { kill(): void };
 
 @Component({
   selector: 'app-side-nav',
@@ -19,7 +18,7 @@ export class SideNavComponent implements AfterViewInit, OnDestroy {
   private animSvc = inject(AnimationService);
   private router  = inject(Router);
   private routerSub?: Subscription;
-  private shimmerTween?: KillableTween;
+  private shimmerTween?: gsap.core.Tween;
 
   @ViewChild('navPill')      navPillRef!: ElementRef<HTMLElement>;
   @ViewChild('startWeekBtn') startWeekBtnRef!: ElementRef<HTMLElement>;
@@ -76,9 +75,8 @@ export class SideNavComponent implements AfterViewInit, OnDestroy {
   onStartWeekHover(): void {
     if (!this.shimmerElRef?.nativeElement) return;
     this.shimmerTween?.kill();
-    const tween = this.animSvc.startStartWeekShimmer(this.shimmerElRef.nativeElement);
-    this.shimmerTween = tween;
-    (tween as any).play?.();
+    this.shimmerTween = this.animSvc.startStartWeekShimmer(this.shimmerElRef.nativeElement);
+    this.shimmerTween.play();
   }
 
   onStartWeekHoverOut(): void {

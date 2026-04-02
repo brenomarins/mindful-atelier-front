@@ -28,22 +28,20 @@ describe('SideNavComponent', () => {
 
     // Simulate routerLinkActive by adding the class manually
     const firstLink = fixture.nativeElement.querySelector('a') as HTMLElement;
-    if (firstLink) {
-      firstLink.classList.add('text-primary');
-      (comp as any)._positionPill();
-      expect(animSvc.animateNavPill).toHaveBeenCalled();
-    }
+    expect(firstLink).withContext('nav link should render').toBeTruthy();
+    firstLink.classList.add('text-primary');
+    (comp as any)._positionPill();
+    expect(animSvc.animateNavPill).toHaveBeenCalled();
   });
 
   it('calls animateNavItemHoverIn on mouseenter', () => {
     spyOn(animSvc, 'animateNavItemHoverIn');
     const fixture = TestBed.createComponent(SideNavComponent);
     fixture.detectChanges();
-    const link = fixture.nativeElement.querySelector('a[routerlink]') as HTMLElement;
-    if (link) {
-      link.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
-      expect(animSvc.animateNavItemHoverIn).toHaveBeenCalled();
-    }
+    const link = fixture.nativeElement.querySelector('a') as HTMLElement;
+    expect(link).withContext('nav link should render').toBeTruthy();
+    link.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    expect(animSvc.animateNavItemHoverIn).toHaveBeenCalled();
   });
 
   it('calls animateStartWeekClick on Start Week button click', () => {
@@ -51,10 +49,9 @@ describe('SideNavComponent', () => {
     const fixture = TestBed.createComponent(SideNavComponent);
     fixture.detectChanges();
     const btn = fixture.nativeElement.querySelector('button[class*="bg-primary"]') as HTMLElement;
-    if (btn) {
-      btn.click();
-      expect(animSvc.animateStartWeekClick).toHaveBeenCalled();
-    }
+    expect(btn).withContext('Start Week button should render').toBeTruthy();
+    btn.click();
+    expect(animSvc.animateStartWeekClick).toHaveBeenCalled();
   });
 
   it('kills shimmer tween and router sub on destroy', () => {
