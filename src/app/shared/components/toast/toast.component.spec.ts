@@ -13,8 +13,6 @@ describe('ToastComponent', () => {
     }).compileComponents();
     animSvc = TestBed.inject(AnimationService);
     toastSvc = TestBed.inject(ToastService);
-    // Prevent auto-dismiss during tests
-    spyOn(window, 'setTimeout').and.callFake((fn: any) => fn);
   });
 
   it('should create', () => {

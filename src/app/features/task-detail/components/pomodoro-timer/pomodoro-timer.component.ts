@@ -34,6 +34,7 @@ export class PomodoroTimerComponent implements OnInit {
 
   timeRemaining    = signal<number>(25 * 60);
   isRunning        = signal<boolean>(false);
+  private sessionTotalDuration = signal<number>(25 * 60);
   sessionType      = signal<SessionType>('work');
   currentSessionId = signal<string | null>(null);
   sessionComplete  = signal<boolean>(false);
@@ -66,6 +67,7 @@ export class PomodoroTimerComponent implements OnInit {
       const remaining = Math.floor((startMs + s.durationMinutes * 60 * 1000 - Date.now()) / 1000);
       if (remaining > 0) {
         this.timeRemaining.set(remaining);
+        this.sessionTotalDuration.set(s.durationMinutes * 60);
         queueMicrotask(() => this.updateRing(remaining / (s.durationMinutes * 60)));
         this.isRunning.set(true);
         this.currentSessionId.set(s.id);
@@ -96,6 +98,7 @@ export class PomodoroTimerComponent implements OnInit {
       this.currentSessionId.set(session.id);
       this.isRunning.set(true);
       this.sessionComplete.set(false);
+      this.sessionTotalDuration.set(this.presetDuration);
       queueMicrotask(() => this.updateRing(1));
       this.startInterval();
     });
@@ -166,7 +169,7 @@ export class PomodoroTimerComponent implements OnInit {
     }
 
     this.timeRemaining.set(remaining);
-    this.updateRing(remaining / this.presetDuration);
+    this.updateRing(remaining / this.sessionTotalDuration());
     if (this.timerDisplayRef?.nativeElement) {
       this.animSvc.animatePomodoroTick(this.timerDisplayRef.nativeElement);
     }

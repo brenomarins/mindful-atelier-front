@@ -168,15 +168,13 @@ export class BacklogComponent implements OnInit {
   }
 
   onTagChipClickWithAnimation(chipEl: HTMLElement, tagId: string): void {
-    const willActivate = this.tagFilter() !== tagId;
-    if (willActivate) {
+    const isActivating = this.tagFilter() !== tagId;
+    if (isActivating) {
       this.animSvc.animateFilterChipActivate(chipEl);
-      this.onTagChipClick(tagId);
-      return;
+    } else {
+      this.animSvc.animateFilterChipDeactivate(chipEl);
     }
-
-    this.animSvc.animateFilterChipDeactivate(chipEl);
-    this.onTagChipClick(null);
+    this.onTagChipClick(tagId);
   }
 
   onToggleSort(): void {

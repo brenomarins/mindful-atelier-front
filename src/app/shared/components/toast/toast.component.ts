@@ -68,9 +68,10 @@ export class ToastComponent implements AfterViewChecked {
     }
 
     // Clean up IDs that are no longer present
-    this.knownIds.forEach(id => {
-      if (!currentIds.has(id)) this.knownIds.delete(id);
-    });
+    const removedIds = [...this.knownIds].filter(id => !currentIds.has(id));
+    if (removedIds.length > 0) {
+      removedIds.forEach(id => this.knownIds.delete(id));
+    }
   }
 
   dismissToast(id: number): void {
