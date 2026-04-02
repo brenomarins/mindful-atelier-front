@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TaskCardComponent } from './task-card.component';
 import { Task } from '../../../core/models/task.model';
 import { provideRouter } from '@angular/router';
+import { AnimationService } from '../../services/animation.service';
 
 const mockTask: Task = {
   id: '1', title: 'Test Task', status: 'backlog',
@@ -11,6 +12,7 @@ const mockTask: Task = {
 describe('TaskCardComponent', () => {
   let fixture: ComponentFixture<TaskCardComponent>;
   let component: TaskCardComponent;
+  let animSvc: AnimationService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -19,6 +21,7 @@ describe('TaskCardComponent', () => {
     }).compileComponents();
     fixture = TestBed.createComponent(TaskCardComponent);
     component = fixture.componentInstance;
+    animSvc = TestBed.inject(AnimationService);
     component.task = mockTask;
     fixture.detectChanges();
   });
@@ -83,9 +86,8 @@ describe('TaskCardComponent', () => {
     expect(component.cardClasses).toContain('task-card--done');
   });
 
-  it('cardClasses includes hover classes for non-done tasks', () => {
-    expect(component.cardClasses).toContain('hover:-translate-y-0.5');
-    expect(component.cardClasses).toContain('hover:shadow-md');
+  it('cardClasses includes bg class for non-done tasks', () => {
+    expect(component.cardClasses).toContain('bg-surface-container-lowest');
   });
 
   it('renders task-card__checkbox class on the checkbox input', () => {
@@ -104,5 +106,23 @@ describe('TaskCardComponent', () => {
     fixture.detectChanges();
     const title = fixture.nativeElement.querySelector('.task-card__title') as HTMLElement;
     expect(title.classList).toContain('task-card__title--done');
+  });
+
+  it('calls animateTaskCompletion when checkbox is checked', () => {
+    spyOn(animSvc, 'animateTaskCompletion');
+    const cb = fixture.nativeElement.querySelector('input[type="checkbox"]') as HTMLInputElement;
+    cb.checked = true;
+    cb.dispatchEvent(new Event('change'));
+    expect(animSvc.animateTaskCompletion).toHaveBeenCalled();
+  });
+
+  it('calls animateTaskUncompletion when checkbox is unchecked', () => {
+    component.task = { ...mockTask, status: 'done' };
+    fixture.detectChanges();
+    spyOn(animSvc, 'animateTaskUncompletion');
+    const cb = fixture.nativeElement.querySelector('input[type="checkbox"]') as HTMLInputElement;
+    cb.checked = false;
+    cb.dispatchEvent(new Event('change'));
+    expect(animSvc.animateTaskUncompletion).toHaveBeenCalled();
   });
 });
